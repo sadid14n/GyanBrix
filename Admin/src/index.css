@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #5dade2;
+  --color-background: #f0f4f8;
+  --color-accent: #a3e4d7;
+
+  /* Color Text */
+  --color-text-heading: #2c3e50;
+  --color-text-body: #34495e;
+  --color-text-subtle: #7f8c8d;
+
+  /* Color Element */
+  --color-border: #d0d9e1;
+  --color-surface: #ffffff;
+
+  /* Feedback */
+  --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-error: #c0392b;
+
+  /* Fonts */
+  --font-heading: "PT Sans", sans-serif;
+  --font-body: "Literata", serif;
+}
