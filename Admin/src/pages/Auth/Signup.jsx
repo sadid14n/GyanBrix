@@ -23,7 +23,7 @@ const Signup = () => {
 
     console.log(form);
 
-    const res = await signup(form.email, form.password, form.role);
+    const res = await signup(form.email, form.password);
     console.log(res);
   };
 
