@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { firebaseAuth, firestoreDB } from "../firebase/firebaseConfig";
@@ -42,6 +44,38 @@ export const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(firebaseAuth, email, password);
   };
 
+  // 📌 Login with Google
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const res = await signInWithPopup(firebaseAuth, provider);
+    const newUser = res.user;
+
+    // check if user already exists in Firestore
+    const ref = doc(firestoreDB, "users", newUser.uid);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      // first time login → create Firestore profile
+      await setDoc(ref, {
+        email: newUser.email,
+        name: newUser.displayName,
+        photoURL: newUser.photoURL,
+        role: "user", // default role
+        createdAt: new Date(),
+      });
+    }
+
+    setUser(newUser);
+    setProfile({
+      email: newUser.email,
+      name: newUser.displayName,
+      photoURL: newUser.photoURL,
+      role: snap.exists() ? snap.data().role : "user",
+    });
+
+    return newUser;
+  };
+
   // logout
   const logout = () => signOut(firebaseAuth);
 
@@ -68,7 +102,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, signup, login, logout }}
+      value={{ user, profile, loading, signup, login, loginWithGoogle, logout }}
     >
       {children}
     </AuthContext.Provider>
