@@ -1,8 +1,11 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Auth/Signup";
+import AdminLayout from "./component/Layout/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import Classes from "./pages/admin/Classes";
+import Subjects from "./pages/admin/Subjects";
 
 const App = () => {
   return (
@@ -10,6 +13,12 @@ const App = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/home" element={<Home />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="classes" element={<Classes />} />
+        <Route path="subjects" element={<Subjects />} />
+        {/* <Route path="chapters" element={<Chapters />} /> */}
+      </Route>
     </Routes>
   );
 };

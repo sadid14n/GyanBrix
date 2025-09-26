@@ -3,26 +3,156 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-primary: #5dade2;
-  --color-background: #f0f4f8;
-  --color-accent: #a3e4d7;
+  /* Primary Colors */
+  --color-primary: #5dade2; /* Soft Blue */
+  --color-primary-foreground: #ffffff; /* White */
 
-  /* Color Text */
-  --color-text-heading: #2c3e50;
-  --color-text-body: #34495e;
-  --color-text-subtle: #7f8c8d;
+  /* Background & Surface */
+  --color-background: #f0f4f8; /* Very Light Grayish Blue */
+  --color-surface: #ffffff; /* White */
+  --color-foreground: #2c3e50; /* Dark Blue-Gray */
 
-  /* Color Element */
-  --color-border: #d0d9e1;
-  --color-surface: #ffffff;
+  /* Accent Colors */
+  --color-accent: #a3e4d7; /* Mint Green */
+  --color-accent-foreground: #2c3e50; /* Dark Blue-Gray */
 
-  /* Feedback */
-  --color-success: #27ae60;
-  --color-warning: #f39c12;
-  --color-error: #c0392b;
+  /* Text Colors */
+  --color-text-heading: #2c3e50; /* Dark Blue-Gray */
+  --color-text-body: #34495e; /* Charcoal Blue */
+  --color-text-subtle: #7f8c8d; /* Gray */
+
+  /* UI Elements */
+  --color-border: #d0d9e1; /* Light Grayish Blue */
+  --color-input: #d0d9e1; /* Light Grayish Blue */
+  --color-ring: #5dade2; /* Soft Blue */
+
+  /* Cards */
+  --color-card: #ffffff; /* White */
+  --color-card-foreground: #34495e; /* Charcoal Blue */
+
+  /* Secondary */
+  --color-secondary: #ecf0f5; /* Very Pale Blue-Gray */
+  --color-secondary-foreground: #2c3e50; /* Dark Blue-Gray */
+
+  /* Muted */
+  --color-muted: #ecf0f5; /* Very Pale Blue-Gray */
+  --color-muted-foreground: #7f8c8d; /* Gray */
+
+  /* Popover */
+  --color-popover: #ffffff; /* White */
+  --color-popover-foreground: #34495e; /* Charcoal Blue */
+
+  /* Feedback Colors */
+  --color-success: #27ae60; /* Emerald Green */
+  --color-success-foreground: #ffffff; /* White */
+  --color-warning: #f39c12; /* Vivid Orange */
+  --color-warning-foreground: #ffffff; /* White */
+  --color-error: #c0392b; /* Strong Red */
+  --color-error-foreground: #ffffff; /* White */
+  --color-destructive: #c0392b; /* Strong Red */
+  --color-destructive-foreground: #ffffff; /* White */
+
+  /* Sidebar */
+  --color-sidebar-background: #fafafa; /* Off White */
+  --color-sidebar-foreground: #3f3f46; /* Dark Gray */
+  --color-sidebar-primary: #1a1a1a; /* Almost Black */
+  --color-sidebar-primary-foreground: #fafafa; /* Off White */
+  --color-sidebar-accent: #f4f4f5; /* Light Gray */
+  --color-sidebar-accent-foreground: #1a1a1a; /* Almost Black */
+  --color-sidebar-border: #e1e6eb; /* Pale Gray */
+  --color-sidebar-ring: #3b82f6; /* Bright Blue */
 
   /* Fonts */
   --font-heading: "PT Sans", sans-serif;
   --font-body: "Literata", serif;
+
+  /* Colors */
+  /* --color-primary: #5dade2;
+  --color-background: #f0f4f8;
+  --color-accent: #a3e4d7; */
+
+  /* Color Text */
+  /* --color-text-heading: #2c3e50;
+  --color-text-body: #34495e;
+  --color-text-subtle: #7f8c8d; */
+
+  /* Color Element */
+  /* --color-border: #d0d9e1;
+  --color-surface: #ffffff; */
+
+  /* Feedback */
+  /* --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-error: #c0392b; */
 }
+
+.admin-card {
+  @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.admin-button-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.admin-button-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.admin-input {
+  @apply w-full px-3 py-2 border border-input rounded-lg bg-surface focus:ring-2 focus:ring-ring focus:border-transparent transition-all;
+}
+
+.dark {
+  /* Dark Theme */
+
+  /* Background & Foreground */
+  --color-background: #0b0f19; /* Very Dark Navy */
+  --color-foreground: #f5f9ff; /* Almost White */
+
+  /* Cards */
+  --color-card: #0b0f19; /* Very Dark Navy */
+  --color-card-foreground: #f5f9ff; /* Almost White */
+
+  /* Popover */
+  --color-popover: #0b0f19; /* Very Dark Navy */
+  --color-popover-foreground: #f5f9ff; /* Almost White */
+
+  /* Primary */
+  --color-primary: #f5f9ff; /* Almost White */
+  --color-primary-foreground: #1c2230; /* Deep Navy */
+
+  /* Secondary */
+  --color-secondary: #2d3544; /* Dark Slate */
+  --color-secondary-foreground: #f5f9ff; /* Almost White */
+
+  /* Muted */
+  --color-muted: #2d3544; /* Dark Slate */
+  --color-muted-foreground: #9ca3af; /* Medium Gray */
+
+  /* Accent */
+  --color-accent: #2d3544; /* Dark Slate */
+  --color-accent-foreground: #f5f9ff; /* Almost White */
+
+  /* Destructive */
+  --color-destructive: #4d0f12; /* Dark Maroon */
+  --color-destructive-foreground: #f5f9ff; /* Almost White */
+
+  /* UI */
+  --color-border: #2d3544; /* Dark Slate */
+  --color-input: #2d3544; /* Dark Slate */
+  --color-ring: #bfd4f6; /* Pale Blue */
+
+  /* Sidebar */
+  --color-sidebar-background: #1a1a1a; /* Almost Black */
+  --color-sidebar-foreground: #f4f4f5; /* Light Gray */
+  --color-sidebar-primary: #2563eb; /* Bright Indigo */
+  --color-sidebar-primary-foreground: #ffffff; /* White */
+  --color-sidebar-accent: #292929; /* Dark Gray */
+  --color-sidebar-accent-foreground: #f4f4f5; /* Light Gray */
+  --color-sidebar-border: #292929; /* Dark Gray */
+  --color-sidebar-ring: #3b82f6; /* Bright Blue */
+}
+
+/* .admin-input {
+  @apply w-full px-3 py-2 border  rounded-lg bg-surface focus:ring-2  focus:border-transparent transition-all;
+} */
