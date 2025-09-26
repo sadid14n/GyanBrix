@@ -167,7 +167,6 @@ const Subjects = () => {
               <h3 className="text-lg font-heading font-semibold text-text-heading mb-2">
                 {subject.name}
               </h3>
-              <p>{subject.classId}</p>
               <p className="text-text-body text-sm mb-3">
                 {subject.description || "No description"}{" "}
               </p>
