@@ -6,6 +6,7 @@ import AdminLayout from "./component/Layout/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Classes from "./pages/admin/Classes";
 import Subjects from "./pages/admin/Subjects";
+import Chapters from "./pages/admin/Chapters";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route index element={<Dashboard />} />
         <Route path="classes" element={<Classes />} />
         <Route path="subjects" element={<Subjects />} />
+        <Route path="chapters" element={<Chapters />} />
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
     </Routes>
