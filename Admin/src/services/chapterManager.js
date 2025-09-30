@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 
 // 📌 Add Chapter inside a Subject
-export const addChapter = async (classId, subjectId, name, user) => {
+export const addChapter = async (classId, subjectId, title, content, user) => {
   const ref = collection(
     firestoreDB,
     "classes",
@@ -22,14 +22,23 @@ export const addChapter = async (classId, subjectId, name, user) => {
   );
 
   return await addDoc(ref, {
-    name,
+    title,
+    content,
+    classId,
+    subjectId,
     createdBy: user.uid,
     createdAt: serverTimestamp(),
   });
 };
 
 // 📌 Update Chapter
-export const updateChapter = async (classId, subjectId, chapterId, name) => {
+export const updateChapter = async (
+  classId,
+  subjectId,
+  chapterId,
+  title,
+  content
+) => {
   const ref = doc(
     firestoreDB,
     "classes",
@@ -39,7 +48,7 @@ export const updateChapter = async (classId, subjectId, chapterId, name) => {
     "chapters",
     chapterId
   );
-  return await updateDoc(ref, { name });
+  return await updateDoc(ref, { title, content });
 };
 
 // 📌 Delete Chapter
