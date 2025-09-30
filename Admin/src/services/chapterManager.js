@@ -21,6 +21,8 @@ export const addChapter = async (classId, subjectId, title, content, user) => {
     "chapters"
   );
 
+  console.log("ID: ", classId, subjectId, title);
+
   return await addDoc(ref, {
     title,
     content,

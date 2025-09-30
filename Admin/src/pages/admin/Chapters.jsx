@@ -4,6 +4,14 @@ import { Link } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useAuth } from "./../../context/AuthContext";
+import { getAllClasses } from "../../services/classManager";
+import { getAllSubjects } from "../../services/subjectManager";
+import {
+  addChapter,
+  deleteChapter,
+  getAllChapters,
+  updateChapter,
+} from "../../services/chapterManager";
 
 const Chapters = () => {
   const [chapters, setChapters] = useState([]);
@@ -62,20 +70,27 @@ const Chapters = () => {
     "code-block",
   ];
 
+  const fetchData = async () => {
+    const cls = await getAllClasses();
+    setClasses(cls);
+
+    let allSubjects = [];
+    for (const c of cls) {
+      const subj = await getAllSubjects(c.id);
+      allSubjects = [...allSubjects, ...subj];
+    }
+    setSubjects(allSubjects);
+
+    let allChapters = [];
+    for (const s of allSubjects) {
+      const chaps = await getAllChapters(s.classId, s.id);
+      allChapters = [...allChapters, ...chaps];
+    }
+    setChapters(allChapters);
+  };
+
   useEffect(() => {
-    // Load chapters, subjects, and classes from localStorage
-    const savedChapters = JSON.parse(
-      localStorage.getItem("lms_chapters") || "[]"
-    );
-    const savedSubjects = JSON.parse(
-      localStorage.getItem("lms_subjects") || "[]"
-    );
-    const savedClasses = JSON.parse(
-      localStorage.getItem("lms_classes") || "[]"
-    );
-    setChapters(savedChapters);
-    setSubjects(savedSubjects);
-    setClasses(savedClasses);
+    fetchData();
   }, []);
 
   const saveToStorage = (updatedChapters) => {
@@ -83,44 +98,89 @@ const Chapters = () => {
     setChapters(updatedChapters);
   };
 
-  const getSubjectInfo = (subjectId) => {
-    const subject = subjects.find((sub) => sub.id === parseInt(subjectId));
-    if (!subject)
-      return { subjectName: "Unknown Subject", className: "Unknown Class" };
+  // const getSubjectInfo = (subjectId) => {
+  //   const subject = subjects.find((sub) => sub.id === parseInt(subjectId));
+  //   if (!subject)
+  //     return { subjectName: "Unknown Subject", className: "Unknown Class" };
 
-    const className =
-      classes.find((cls) => cls.id === subject.classId)?.name ||
-      "Unknown Class";
-    return { subjectName: subject.name, className };
+  //   const className =
+  //     classes.find((cls) => cls.id === subject.classId)?.name ||
+  //     "Unknown Class";
+  //   return { subjectName: subject.name, className };
+  // };
+
+  const getSubjectInfo = (classId, subjectId) => {
+    const classInfo = classes.find((cls) => cls.id === classId);
+    if (!classInfo) return { classname: "Unknown Class" };
+
+    const subjectInfo = subjects.find((sub) => sub.id === subjectId);
+    if (!subjectInfo) return { subjectname: "Unknown Subject" };
+
+    return { classname: classInfo.name, subjectname: subjectInfo.name };
   };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (editingChapter) {
+  //     // Update existing chapter
+  //     const updatedChapters = chapters.map((chapter) =>
+  //       chapter.id === editingChapter.id
+  //         ? {
+  //             ...chapter,
+  //             ...formData,
+  //             subjectId: parseInt(formData.subjectId),
+  //             updatedAt: new Date().toISOString(),
+  //           }
+  //         : chapter
+  //     );
+  //     saveToStorage(updatedChapters);
+  //   } else {
+  //     // Create new chapter
+  //     const newChapter = {
+  //       id: Date.now(),
+  //       ...formData,
+  //       subjectId: parseInt(formData.subjectId),
+  //       createdAt: new Date().toISOString(),
+  //       updatedAt: new Date().toISOString(),
+  //     };
+  //     saveToStorage([...chapters, newChapter]);
+  //   }
+
+  //   setFormData({ title: "", content: "", subjectId: "" });
+  //   setEditingChapter(null);
+  //   setIsModalOpen(false);
+  // };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.subjectId) return;
+
+    const subject = subjects.find((s) => s.id === formData.subjectId);
+    if (!subject) return;
+
     if (editingChapter) {
-      // Update existing chapter
-      const updatedChapters = chapters.map((chapter) =>
-        chapter.id === editingChapter.id
-          ? {
-              ...chapter,
-              ...formData,
-              subjectId: parseInt(formData.subjectId),
-              updatedAt: new Date().toISOString(),
-            }
-          : chapter
+      // 🔥 Update chapter in Firestore
+      await updateChapter(
+        subject.classId,
+        subject.id,
+        editingChapter.id,
+        formData.title,
+        formData.content
       );
-      saveToStorage(updatedChapters);
     } else {
-      // Create new chapter
-      const newChapter = {
-        id: Date.now(),
-        ...formData,
-        subjectId: parseInt(formData.subjectId),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      saveToStorage([...chapters, newChapter]);
+      // 🔥 Add new chapter in Firestore
+      await addChapter(
+        subject.classId,
+        subject.id,
+        formData.title,
+        formData.content,
+        user
+      );
     }
+
+    await fetchData();
 
     setFormData({ title: "", content: "", subjectId: "" });
     setEditingChapter(null);
@@ -132,15 +192,15 @@ const Chapters = () => {
     setFormData({
       title: chapter.title,
       content: chapter.content,
-      subjectId: chapter.subjectId.toString(),
+      subjectId: chapter.subjectId,
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (chapter) => {
     if (confirm("Are you sure you want to delete this chapter?")) {
-      const updatedChapters = chapters.filter((chapter) => chapter.id !== id);
-      saveToStorage(updatedChapters);
+      await deleteChapter(chapter.classId, chapter.subjectId, chapter.id);
+      await fetchData();
     }
   };
 
@@ -212,7 +272,8 @@ const Chapters = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {chapters.map((chapter) => {
-            const { subjectName, className } = getSubjectInfo(
+            const { subjectname, classname } = getSubjectInfo(
+              chapter.classId,
               chapter.subjectId
             );
             return (
@@ -235,7 +296,7 @@ const Chapters = () => {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(chapter.id)}
+                      onClick={() => handleDelete(chapter)}
                       className="p-2 text-text-subtle hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -254,10 +315,10 @@ const Chapters = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col space-y-1">
                     <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full w-fit">
-                      {subjectName}
+                      {subjectname}
                     </span>
                     <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full w-fit">
-                      {className}
+                      {classname}
                     </span>
                   </div>
                   <div className="text-xs text-text-subtle">
