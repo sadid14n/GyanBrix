@@ -27,9 +27,25 @@ export const updateSubject = async (classId, subjectId, name) => {
 };
 
 // 📌 Delete Subject
+// export const deleteSubject = async (classId, subjectId) => {
+//   const ref = doc(firestoreDB, "classes", classId, "subjects", subjectId);
+//   return await deleteDoc(ref);
+// };
 export const deleteSubject = async (classId, subjectId) => {
+  if (!classId || !subjectId) {
+    throw new Error("deleteSubject: missing classId or subjectId");
+  }
+
   const ref = doc(firestoreDB, "classes", classId, "subjects", subjectId);
-  return await deleteDoc(ref);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    throw new Error(
+      `Subject not found at classes/${classId}/subjects/${subjectId}`
+    );
+  }
+
+  await deleteDoc(ref);
+  return true;
 };
 
 // 📌 Get Single Subject
@@ -37,12 +53,16 @@ export const getSubject = async (classId, subjectId) => {
   const ref = doc(firestoreDB, "classes", classId, "subjects", subjectId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() };
+  return { id: snap.id, classId, ...snap.data() }; // include classId
 };
 
 // 📌 Get All Subjects of a Class
 export const getAllSubjects = async (classId) => {
   const ref = collection(firestoreDB, "classes", classId, "subjects");
   const querySnapshot = await getDocs(ref);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    classId, // include classId for each subject
+    ...doc.data(),
+  }));
 };

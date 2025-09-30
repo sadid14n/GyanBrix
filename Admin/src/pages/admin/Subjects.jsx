@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, BookOpen } from "lucide-react";
+import { useAuth } from "./../../context/AuthContext";
+import { getAllClasses } from "../../services/classManager";
+import {
+  addSubject,
+  deleteSubject,
+  getAllSubjects,
+  updateSubject,
+} from "../../services/subjectManager";
 
 const Subjects = () => {
   const [subjects, setSubjects] = useState([]);
@@ -12,55 +20,38 @@ const Subjects = () => {
     classId: "",
   });
 
+  const { user } = useAuth();
+
+  // 📌 Load classes & subjects on mount
+  const fetchData = async () => {
+    const cls = await getAllClasses();
+    setClasses(cls);
+
+    let allSubjects = [];
+    for (const c of cls) {
+      const subj = await getAllSubjects(c.id);
+      allSubjects = [...allSubjects, ...subj];
+    }
+    setSubjects(allSubjects);
+  };
+
   useEffect(() => {
-    // Load subjects and classes from localStorage
-    const savedSubjects = JSON.parse(
-      localStorage.getItem("lms_subjects") || "[]"
-    );
-    const savedClasses = JSON.parse(
-      localStorage.getItem("lms_classes") || "[]"
-    );
-    setSubjects(savedSubjects);
-    setClasses(savedClasses);
+    fetchData();
   }, []);
 
-  const saveToStorage = (updatedSubjects) => {
-    localStorage.setItem("lms_subjects", JSON.stringify(updatedSubjects));
-    setSubjects(updatedSubjects);
-  };
-
-  const getClassName = (classId) => {
-    const foundClass = classes.find((cls) => cls.id === parseInt(classId));
-    return foundClass ? foundClass.name : "Unknown Class";
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (editingSubject) {
-      // Update existing subject
-      const updatedSubjects = subjects.map((subject) =>
-        subject.id === editingSubject.id
-          ? {
-              ...subject,
-              ...formData,
-              classId: parseInt(formData.classId),
-              updatedAt: new Date().toISOString(),
-            }
-          : subject
-      );
-      saveToStorage(updatedSubjects);
+      // Update subject
+      await updateSubject(formData.classId, editingSubject.id, formData.name);
     } else {
-      // Create new subject
-      const newSubject = {
-        id: Date.now(),
-        ...formData,
-        classId: parseInt(formData.classId),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      saveToStorage([...subjects, newSubject]);
+      // Add new subject
+      await addSubject(formData.classId, formData.name, user);
     }
+
+    // Refresh subjects
+    await fetchData();
 
     setFormData({ name: "", description: "", classId: "" });
     setEditingSubject(null);
@@ -71,16 +62,17 @@ const Subjects = () => {
     setEditingSubject(subject);
     setFormData({
       name: subject.name,
-      description: subject.description,
-      classId: subject.classId.toString(),
+      description: subject.description || "",
+      classId: subject.classId,
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (classId, subjectId) => {
     if (confirm("Are you sure you want to delete this subject?")) {
-      const updatedSubjects = subjects.filter((subject) => subject.id !== id);
-      saveToStorage(updatedSubjects);
+      await deleteSubject(classId, subjectId);
+
+      await fetchData();
     }
   };
 
@@ -165,7 +157,7 @@ const Subjects = () => {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(subject.id)}
+                    onClick={() => handleDelete(subject.classId, subject.id)}
                     className="p-2 text-text-subtle hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -176,14 +168,17 @@ const Subjects = () => {
                 {subject.name}
               </h3>
               <p className="text-text-body text-sm mb-3">
-                {subject.description}
+                {subject.description || "No description"}{" "}
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  {getClassName(subject.classId)}
+                  {classes.find((cls) => cls.id === subject.classId)?.name ||
+                    "Unknown Class"}
                 </span>
                 <div className="text-xs text-text-subtle">
-                  {new Date(subject.createdAt).toLocaleDateString()}
+                  {subject.createdAt?.toDate
+                    ? subject.createdAt.toDate().toLocaleDateString()
+                    : ""}{" "}
                 </div>
               </div>
             </div>
