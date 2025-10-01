@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, FileText, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
 import { useAuth } from "./../../context/AuthContext";
 import { getAllClasses } from "../../services/classManager";
 import { getAllSubjects } from "../../services/subjectManager";
@@ -12,6 +10,7 @@ import {
   getAllChapters,
   updateChapter,
 } from "../../services/chapterManager";
+import ChapterForm from "./ChapterForm";
 
 const Chapters = () => {
   const [chapters, setChapters] = useState([]);
@@ -19,56 +18,14 @@ const Chapters = () => {
   const [classes, setClasses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingChapter, setEditingChapter] = useState(null);
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    classId: "",
     subjectId: "",
   });
 
   const { user } = useAuth();
-
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ font: [] }],
-      [{ size: ["small", false, "large", "huge"] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
-      [{ script: "sub" }, { script: "super" }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ indent: "-1" }, { indent: "+1" }],
-      [{ direction: "rtl" }],
-      [{ align: [] }],
-      ["link", "image", "video"],
-      ["code-block"],
-      ["clean"],
-    ],
-    clipboard: {
-      matchVisual: false,
-    },
-  };
-
-  const quillFormats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "list",
-    "indent",
-    "link",
-    "image",
-    "video",
-    "color",
-    "background",
-    "align",
-    "script",
-    "code-block",
-  ];
 
   const fetchData = async () => {
     const cls = await getAllClasses();
@@ -93,22 +50,6 @@ const Chapters = () => {
     fetchData();
   }, []);
 
-  const saveToStorage = (updatedChapters) => {
-    localStorage.setItem("lms_chapters", JSON.stringify(updatedChapters));
-    setChapters(updatedChapters);
-  };
-
-  // const getSubjectInfo = (subjectId) => {
-  //   const subject = subjects.find((sub) => sub.id === parseInt(subjectId));
-  //   if (!subject)
-  //     return { subjectName: "Unknown Subject", className: "Unknown Class" };
-
-  //   const className =
-  //     classes.find((cls) => cls.id === subject.classId)?.name ||
-  //     "Unknown Class";
-  //   return { subjectName: subject.name, className };
-  // };
-
   const getSubjectInfo = (classId, subjectId) => {
     const classInfo = classes.find((cls) => cls.id === classId);
     if (!classInfo) return { classname: "Unknown Class" };
@@ -119,49 +60,28 @@ const Chapters = () => {
     return { classname: classInfo.name, subjectname: subjectInfo.name };
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
+  const openModal = (chapter = null) => {
+    setEditingChapter(chapter);
 
-  //   if (editingChapter) {
-  //     // Update existing chapter
-  //     const updatedChapters = chapters.map((chapter) =>
-  //       chapter.id === editingChapter.id
-  //         ? {
-  //             ...chapter,
-  //             ...formData,
-  //             subjectId: parseInt(formData.subjectId),
-  //             updatedAt: new Date().toISOString(),
-  //           }
-  //         : chapter
-  //     );
-  //     saveToStorage(updatedChapters);
-  //   } else {
-  //     // Create new chapter
-  //     const newChapter = {
-  //       id: Date.now(),
-  //       ...formData,
-  //       subjectId: parseInt(formData.subjectId),
-  //       createdAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     };
-  //     saveToStorage([...chapters, newChapter]);
-  //   }
+    // Pre-fill formData here
+    if (chapter) {
+      setFormData({
+        title: chapter.title || "",
+        content: chapter.content || "",
+        subjectId: chapter.subjectId || "",
+      });
+    } else {
+      setFormData({ title: "", content: "", subjectId: "" });
+    }
 
-  //   setFormData({ title: "", content: "", subjectId: "" });
-  //   setEditingChapter(null);
-  //   setIsModalOpen(false);
-  // };
+    setIsModalOpen(true);
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.subjectId) return;
-
+  const handleModalSubmit = async (formData) => {
     const subject = subjects.find((s) => s.id === formData.subjectId);
     if (!subject) return;
 
     if (editingChapter) {
-      // 🔥 Update chapter in Firestore
       await updateChapter(
         subject.classId,
         subject.id,
@@ -170,7 +90,6 @@ const Chapters = () => {
         formData.content
       );
     } else {
-      // 🔥 Add new chapter in Firestore
       await addChapter(
         subject.classId,
         subject.id,
@@ -180,21 +99,9 @@ const Chapters = () => {
       );
     }
 
-    await fetchData();
-
-    setFormData({ title: "", content: "", subjectId: "" });
-    setEditingChapter(null);
     setIsModalOpen(false);
-  };
-
-  const handleEdit = (chapter) => {
-    setEditingChapter(chapter);
-    setFormData({
-      title: chapter.title,
-      content: chapter.content,
-      subjectId: chapter.subjectId,
-    });
-    setIsModalOpen(true);
+    setEditingChapter(null);
+    await fetchData();
   };
 
   const handleDelete = async (chapter) => {
@@ -202,19 +109,6 @@ const Chapters = () => {
       await deleteChapter(chapter.classId, chapter.subjectId, chapter.id);
       await fetchData();
     }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const openModal = () => {
-    setEditingChapter(null);
-    setFormData({ title: "", content: "", subjectId: "" });
-    setIsModalOpen(true);
   };
 
   return (
@@ -230,7 +124,7 @@ const Chapters = () => {
           </p>
         </div>
         <button
-          onClick={openModal}
+          onClick={() => openModal()}
           className="admin-button-primary flex items-center"
           disabled={subjects.length === 0}
         >
@@ -262,7 +156,7 @@ const Chapters = () => {
             Get started by creating your first chapter solution
           </p>
           <button
-            onClick={openModal}
+            onClick={() => openModal()}
             className="admin-button-primary"
             disabled={subjects.length === 0}
           >
@@ -284,13 +178,13 @@ const Chapters = () => {
                   </div>
                   <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link
-                      to={`/admin/chapters/${chapter.id}`}
+                      to={`/admin/chapters/${chapter.classId}/${chapter.subjectId}/${chapter.id}`}
                       className="p-2 text-text-subtle hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
                     <button
-                      onClick={() => handleEdit(chapter)}
+                      onClick={() => openModal(chapter)}
                       className="p-2 text-text-subtle hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                     >
                       <Edit className="h-4 w-4" />
@@ -322,7 +216,9 @@ const Chapters = () => {
                     </span>
                   </div>
                   <div className="text-xs text-text-subtle">
-                    {new Date(chapter.createdAt).toLocaleDateString()}
+                    {chapter.createdAt?.toDate
+                      ? chapter.createdAt.toDate().toLocaleDateString()
+                      : ""}
                   </div>
                 </div>
               </div>
@@ -331,108 +227,17 @@ const Chapters = () => {
         </div>
       )}
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center  min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            {/* <div
-              className="fixed inset-0 transition-opacity bg-black bg-opacity-50"
-              onClick={() => setIsModalOpen(false)}
-            ></div> */}
-
-            <div className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-surface shadow-xl rounded-lg">
-              <h3 className="text-lg font-heading font-semibold text-text-heading mb-4">
-                {editingChapter ? "Edit Chapter" : "Create New Chapter"}
-              </h3>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="subjectId"
-                    className="block text-sm font-medium text-text-body mb-2"
-                  >
-                    Subject
-                  </label>
-                  <select
-                    id="subjectId"
-                    name="subjectId"
-                    value={formData.subjectId}
-                    onChange={handleChange}
-                    required
-                    className="admin-input"
-                  >
-                    <option value="">Select a subject</option>
-                    {subjects.map((subject) => {
-                      const className =
-                        classes.find((cls) => cls.id === subject.classId)
-                          ?.name || "";
-                      return (
-                        <option key={subject.id} value={subject.id}>
-                          {className} - {subject.name}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium text-text-body mb-2"
-                  >
-                    Chapter Title
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="admin-input"
-                    placeholder="e.g., Acid Base and Salt, Thermodynamics"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="content"
-                    className="block text-sm font-medium text-text-body mb-2"
-                  >
-                    Chapter Content/Solution
-                  </label>
-                  <div className="bg-surface border border-border rounded-lg">
-                    <ReactQuill
-                      theme="snow"
-                      value={formData.content}
-                      onChange={(content) =>
-                        setFormData({ ...formData, content })
-                      }
-                      modules={quillModules}
-                      formats={quillFormats}
-                      placeholder="Enter the chapter content, solutions, or study material..."
-                      style={{ minHeight: "200px" }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="admin-button-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="admin-button-primary">
-                    {editingChapter ? "Update" : "Create"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Chapter Modal */}
+      <ChapterForm
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        editingChapter={editingChapter}
+        subjects={subjects}
+        classes={classes}
+        formData={formData}
+        setFormData={setFormData}
+      />
     </div>
   );
 };

@@ -7,6 +7,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Classes from "./pages/admin/Classes";
 import Subjects from "./pages/admin/Subjects";
 import Chapters from "./pages/admin/Chapters";
+import ViewChapter from "./pages/admin/ViewChapter";
 
 const App = () => {
   return (
@@ -19,6 +20,10 @@ const App = () => {
         <Route path="classes" element={<Classes />} />
         <Route path="subjects" element={<Subjects />} />
         <Route path="chapters" element={<Chapters />} />
+        <Route
+          path="chapters/:classId/:subjectId/:chapterId"
+          element={<ViewChapter />}
+        />
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
     </Routes>
