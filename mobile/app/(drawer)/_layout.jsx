@@ -25,7 +25,6 @@ export default function DrawerLayout() {
         headerTitleAlign: "center",
         headerStyle: {
           height: 80, // adjust header height
-          padding: 0, // adjust padding to center title vertically
         },
         drawerActiveTintColor: "#ff6600",
         drawerInactiveTintColor: "#888",

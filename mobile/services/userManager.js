@@ -132,6 +132,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /* 🧩 Update user’s selected class */
+  const updateUserSelectedClass = async (uid, classId) => {
+    try {
+      const userRef = doc(firestoreDB, "users", uid);
+      await updateDoc(userRef, { selectedClass: classId });
+    } catch (error) {
+      console.error("Error updating user selected class:", error);
+      throw error;
+    }
+  };
+
+  /* 📦 Get user profile (with saved class) */
+  const getUserProfile = async (uid) => {
+    try {
+      const ref = doc(firestoreDB, "users", uid);
+      const snap = await getDoc(ref);
+      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+  };
+
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(
@@ -170,6 +193,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         getUserData,
         updateProfile,
+        updateUserSelectedClass,
+        getUserProfile,
       }}
     >
       {children}
