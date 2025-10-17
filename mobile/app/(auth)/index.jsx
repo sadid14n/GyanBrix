@@ -36,7 +36,7 @@ const Login = () => {
       setLoading(true);
       await login(email.trim(), password);
       // if login is successful, onAuthStateChanged will handle redirect in RootLayout
-      router.replace("/(tabs)");
+      // router.replace("/(drawer)/(tabs)/home");
     } catch (error) {
       Alert.alert("Login failed", error.message);
     } finally {

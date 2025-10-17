@@ -34,7 +34,7 @@ function MainLayout() {
     if (!isSignedIn && !inAuthScreen) {
       router.replace("/(auth)");
     } else if (isSignedIn && inAuthScreen) {
-      router.replace("/(tabs)");
+      router.replace("/(drawer)/(tabs)/home");
     }
   }, [user, loading, segments]);
 

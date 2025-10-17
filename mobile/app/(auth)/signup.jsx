@@ -41,7 +41,7 @@ const Signup = () => {
       await signup(email, password, "user");
 
       Alert.alert("Success", "Account created successfully!");
-      router.replace("/(tabs)"); // 👈 redirect to home or dashboard
+      // router.replace("/(drawer)/(tabs)/home"); // 👈 redirect to home or dashboard
     } catch (error) {
       console.error("Signup error:", error);
       Alert.alert("Error", error.message || "Signup failed");
