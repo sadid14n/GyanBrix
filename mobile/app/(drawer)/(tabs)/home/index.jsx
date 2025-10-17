@@ -1,7 +1,7 @@
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import {
   getAllClasses,
@@ -50,19 +50,18 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-        Select Your Class:
-      </Text>
-
-      <Picker
-        selectedValue={selectedClass}
-        onValueChange={(value) => handleClassChange(value)}
-      >
-        <Picker.Item label="Select Class" value={null} />
-        {classes.map((cls) => (
-          <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
-        ))}
-      </Picker>
+      <View style={styles.container}>
+        <Picker
+          selectedValue={selectedClass}
+          onValueChange={(value) => handleClassChange(value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select Class" value={null} />
+          {classes.map((cls) => (
+            <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
+          ))}
+        </Picker>
+      </View>
 
       <Text style={{ fontSize: 20, marginTop: 20, fontWeight: "bold" }}>
         Subjects:
@@ -82,3 +81,19 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "flex-start", // picker stays on LHS
+    justifyContent: "center",
+    width: "100%",
+  },
+  picker: {
+    width: 180, // adjust as needed
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
+  },
+});
