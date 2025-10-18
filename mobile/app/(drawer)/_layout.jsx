@@ -25,29 +25,47 @@ export default function DrawerLayout() {
   return (
     <Drawer
       screenOptions={{
-        headerTitle: () => (
+        header: ({ navigation, back }) => (
           <View
             style={{
-              flex: 1,
-              justifyContent: "center",
+              height: 80,
+              flexDirection: "row",
               alignItems: "center",
+              paddingHorizontal: 15,
+              borderBottomWidth: 1,
+              borderColor: "#ddd",
+              backgroundColor: "#fff",
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "bold" }}>GyanBrix</Text>
+            {back ? (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Ionicons name="arrow-back" size={28} color="black" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+                <Ionicons name="menu-outline" size={28} color="black" />
+              </TouchableOpacity>
+            )}
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                marginLeft: back ? 10 : 0,
+                flex: 1,
+                textAlign: back ? "left" : "center",
+              }}
+            >
+              GyanBrix
+            </Text>
           </View>
         ),
         headerShadowVisible: false,
-        headerTitleAlign: "center",
-        headerStyle: {
-          height: 80,
-        },
-        drawerActiveTintColor: "#ff6600",
-        drawerInactiveTintColor: "#888",
-        drawerStyle: { backgroundColor: "#f5f5f5", width: 280 },
       }}
+      drawerActiveTintColor="#ff6600"
+      drawerInactiveTintColor="#888"
+      drawerStyle={{ backgroundColor: "#f5f5f5", width: 280 }}
       drawerContent={(props) => (
         <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
-          {/* --- User Info Section --- */}
           {user && (
             <View
               style={{
@@ -69,10 +87,8 @@ export default function DrawerLayout() {
             </View>
           )}
 
-          {/* --- Default Drawer Screens --- */}
           <DrawerItemList {...props} />
 
-          {/* --- Logout Button --- */}
           <View style={{ marginTop: "auto", padding: 20 }}>
             <TouchableOpacity
               onPress={handleLogout}

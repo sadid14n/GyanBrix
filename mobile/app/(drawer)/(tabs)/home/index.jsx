@@ -8,6 +8,7 @@ import {
   getAllSubjects,
 } from "../../../../services/dataManager";
 import { useAuth } from "../../../../services/userManager";
+import COLORS from "./../../../../constants/color";
 
 export default function HomeScreen() {
   const [classes, setClasses] = useState([]);
@@ -49,7 +50,7 @@ export default function HomeScreen() {
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={{ flex: 1, padding: 16, backgroundColor: COLORS.background }}>
       <View style={styles.container}>
         <Picker
           selectedValue={selectedClass}
@@ -67,17 +68,22 @@ export default function HomeScreen() {
         Subjects:
       </Text>
 
-      {subjects.map((subject) => (
-        <Text
-          key={subject.id}
-          onPress={() =>
-            router.push(`/home/subject/${subject.id}?classId=${selectedClass}`)
-          }
-          style={{ marginVertical: 8, fontSize: 16 }}
-        >
-          📘 {subject.name}
-        </Text>
-      ))}
+      <View style={styles.subjectContainer}>
+        {subjects.map((subject) => (
+          <View key={subject.id} style={styles.subjectCard}>
+            <Text
+              onPress={() =>
+                router.push(
+                  `/home/subject/${subject.id}?classId=${selectedClass}`
+                )
+              }
+              style={styles.subjectText}
+            >
+              📘 {subject.name}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -96,4 +102,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#f9f9f9",
   },
+  subjectContainer: {
+    borderBottomColor: "#ccc",
+    paddingVertical: 10,
+    width: "100%",
+  },
+  subjectCard: {
+    backgroundColor: "#f9cfe0ff",
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 5,
+    height: 100,
+    justifyContent: "center",
+  },
+  subjectText: { fontSize: 22, color: COLORS.textPrimary, fontWeight: "bold" },
 });
