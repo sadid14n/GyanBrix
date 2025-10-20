@@ -1,149 +1,57 @@
-import { Ionicons } from "@expo/vector-icons";
-import {
-  DrawerContentScrollView,
-  DrawerItemList,
-} from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
+import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
+import { router, usePathname } from "expo-router";
 import { Drawer } from "expo-router/drawer";
-import { Text, TouchableOpacity, View } from "react-native";
-import COLORS from "../../constants/color";
-import { useAuth } from "../../services/userManager";
+import { Button, Text, View } from "react-native";
+import { useAuth } from "./../../services/userManager";
 
-export default function DrawerLayout() {
-  const navigation = useNavigation();
-  const { logout, profile, user } = useAuth();
+const CustomDrawerContent = (props) => {
+  const pathname = usePathname();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigation.replace("/(auth)"); // redirect to signin page
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
-  };
+  const { logout } = useAuth();
 
   return (
+    <DrawerContentScrollView {...props}>
+      <View style={{ padding: 10 }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold" }}>GyanBrix</Text>
+      </View>
+      <DrawerItem
+        label={"Home"}
+        onPress={() => router.push("/(drawer)/(tabs)/home")}
+        focused={pathname === "/home"}
+      />
+      <DrawerItem
+        label={"Profile"}
+        onPress={() => router.push("/(drawer)/(tabs)/profile")}
+        focused={pathname === "/profile"}
+      />
+      <DrawerItem
+        label={"Setting"}
+        onPress={() => router.push("/(drawer)/(tabs)/setting")}
+        focused={pathname === "/setting"}
+      />
+
+      <View
+        style={{
+          marginTop: 20,
+          paddingHorizontal: 10,
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+        }}
+      >
+        <Button title="Logout" onPress={() => logout()} color="red" />
+      </View>
+    </DrawerContentScrollView>
+  );
+};
+
+export default function DrawerLayout() {
+  return (
     <Drawer
-      screenOptions={{
-        header: ({ navigation, back }) => (
-          <View
-            style={{
-              height: 80,
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 15,
-              borderBottomWidth: 1,
-              borderColor: "#ddd",
-              backgroundColor: "#fff",
-            }}
-          >
-            {back ? (
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={28} color="black" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
-                <Ionicons name="menu-outline" size={28} color="black" />
-              </TouchableOpacity>
-            )}
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "bold",
-                marginLeft: back ? 10 : 0,
-                flex: 1,
-                textAlign: back ? "left" : "center",
-              }}
-            >
-              GyanBrix
-            </Text>
-          </View>
-        ),
-        headerShadowVisible: false,
-      }}
       drawerActiveTintColor="#ff6600"
       drawerInactiveTintColor="#888"
-      drawerStyle={{ backgroundColor: "#f5f5f5", width: 280 }}
-      drawerContent={(props) => (
-        <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
-          {user && (
-            <View
-              style={{
-                alignItems: "center",
-                borderBottomWidth: 1,
-                borderBottomColor: "#ddd",
-                paddingVertical: 20,
-                marginBottom: 10,
-                backgroundColor: "#fff",
-              }}
-            >
-              <Ionicons name="person-circle-outline" size={80} color="#555" />
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                {user.displayName || "User"}
-              </Text>
-              <Text style={{ color: "#555" }}>
-                {profile?.email || user?.email}
-              </Text>
-            </View>
-          )}
-
-          <DrawerItemList {...props} />
-
-          <View style={{ marginTop: "auto", padding: 20 }}>
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: COLORS?.primary || "#ff6600",
-                paddingVertical: 10,
-                borderRadius: 10,
-              }}
-            >
-              <Ionicons name="log-out-outline" color="white" size={22} />
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  marginLeft: 8,
-                }}
-              >
-                Logout
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </DrawerContentScrollView>
-      )}
-    >
-      <Drawer.Screen
-        name="(tabs)"
-        options={{
-          title: "Home",
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="dashboard"
-        options={{
-          title: "Dashboard",
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="speedometer-outline" color={color} size={size} />
-          ),
-        }}
-      />
-    </Drawer>
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{ headerShown: false, headerTitle: "GyanBrix" }}
+    ></Drawer>
   );
 }

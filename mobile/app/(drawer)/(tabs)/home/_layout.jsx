@@ -1,15 +1,17 @@
+import { DrawerToggleButton } from "@react-navigation/drawer";
 import { Stack } from "expo-router";
 
 export default function HomeStackLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerRight: () => <DrawerToggleButton />,
       }}
     >
       <Stack.Screen
         name="index"
-        options={{ title: "Home", headerShown: false }}
+        options={{ title: "GyanBrix", headerShown: true }}
       />
       <Stack.Screen
         name="subject/[subjectId]/index"
