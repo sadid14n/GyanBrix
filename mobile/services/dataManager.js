@@ -1,10 +1,9 @@
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { firestoreDB } from "./firebaseConfig";
+import firestore from "@react-native-firebase/firestore";
 
 /* --------------------------- 📚 CLASS FUNCTIONS --------------------------- */
 export const getAllClasses = async () => {
   try {
-    const snapshot = await getDocs(collection(firestoreDB, "classes"));
+    const snapshot = await firestore().collection("classes").get();
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error("Error fetching classes:", error);
@@ -15,8 +14,12 @@ export const getAllClasses = async () => {
 /* -------------------------- 📘 SUBJECT FUNCTIONS -------------------------- */
 export const getAllSubjects = async (classId) => {
   try {
-    const ref = collection(firestoreDB, "classes", classId, "subjects");
-    const snapshot = await getDocs(ref);
+    const snapshot = await firestore()
+      .collection("classes")
+      .doc(classId)
+      .collection("subjects")
+      .get();
+
     return snapshot.docs.map((doc) => ({
       id: doc.id,
       classId,
@@ -31,15 +34,14 @@ export const getAllSubjects = async (classId) => {
 /* -------------------------- 📖 CHAPTER FUNCTIONS -------------------------- */
 export const getAllChapters = async (classId, subjectId) => {
   try {
-    const ref = collection(
-      firestoreDB,
-      "classes",
-      classId,
-      "subjects",
-      subjectId,
-      "chapters"
-    );
-    const snapshot = await getDocs(ref);
+    const snapshot = await firestore()
+      .collection("classes")
+      .doc(classId)
+      .collection("subjects")
+      .doc(subjectId)
+      .collection("chapters")
+      .get();
+
     return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -55,17 +57,16 @@ export const getAllChapters = async (classId, subjectId) => {
 
 export const getChapter = async (classId, subjectId, chapterId) => {
   try {
-    const ref = doc(
-      firestoreDB,
-      "classes",
-      classId,
-      "subjects",
-      subjectId,
-      "chapters",
-      chapterId
-    );
-    const snap = await getDoc(ref);
-    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    const docSnap = await firestore()
+      .collection("classes")
+      .doc(classId)
+      .collection("subjects")
+      .doc(subjectId)
+      .collection("chapters")
+      .doc(chapterId)
+      .get();
+
+    return docSnap.exists ? { id: docSnap.id, ...docSnap.data() } : null;
   } catch (error) {
     console.error(
       `Error fetching chapter ${chapterId} for class ${classId} and subject ${subjectId}:`,

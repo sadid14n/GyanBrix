@@ -1,14 +1,6 @@
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
-import { firebaseAuth, firestoreDB } from "./firebaseConfig";
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
@@ -16,9 +8,9 @@ export const useAuth = () => useContext(AuthContext);
 // Helper function to fetch user profile from Firestore
 export const getUserData = async (uid) => {
   try {
-    const ref = doc(firestoreDB, "users", uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) return snap.data();
+    const userRef = firestore().collection("users").doc(uid);
+    const snap = await userRef.get();
+    if (snap.exists) return snap.data();
     return null;
   } catch (error) {
     console.error("Error fetching user data:", error);
@@ -31,20 +23,17 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Signup
+  // Signup with email & password
   const signup = async (email, password, role = "user") => {
     try {
-      const res = await createUserWithEmailAndPassword(
-        firebaseAuth,
-        email,
-        password
-      );
+      const res = await auth().createUserWithEmailAndPassword(email, password);
       const newUser = res.user;
 
-      await setDoc(doc(firestoreDB, "users", newUser.uid), {
+      // Save user profile to Firestore
+      await firestore().collection("users").doc(newUser.uid).set({
         email: newUser.email,
         role,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       });
 
       setUser(newUser);
@@ -56,59 +45,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Login
+  // Login with email & password
   const login = async (email, password) => {
     try {
-      return await signInWithEmailAndPassword(firebaseAuth, email, password);
+      return await auth().signInWithEmailAndPassword(email, password);
     } catch (error) {
       console.error("Login error:", error);
       throw error;
     }
   };
 
-  // Login with Google
-  const loginWithGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const res = await signInWithPopup(firebaseAuth, provider);
-      const newUser = res.user;
-
-      // Fetch Firestore profile
-      const ref = doc(firestoreDB, "users", newUser.uid);
-      const snap = await getDoc(ref);
-
-      if (!snap.exists()) {
-        await setDoc(ref, {
-          email: newUser.email,
-          name: newUser.displayName,
-          photoURL: newUser.photoURL,
-          role: "user",
-          createdAt: new Date(),
-        });
-      }
-
-      setUser(newUser);
-      setProfile({
-        email: newUser.email,
-        name: newUser.displayName,
-        photoURL: newUser.photoURL,
-        role: snap.exists() ? snap.data().role : "user",
-      });
-
-      return newUser;
-    } catch (error) {
-      console.error("Google login error:", error);
-      throw error;
-    }
-  };
-
-  // Update user profile (like name, photoURL, etc.)
+  // Update user profile (name, etc.)
   const updateProfile = async (updates) => {
     try {
       if (!user) throw new Error("No user logged in");
 
-      const ref = doc(firestoreDB, "users", user.uid);
-      await updateDoc(ref, updates);
+      const userRef = firestore().collection("users").doc(user.uid);
+      await userRef.update(updates);
 
       const updatedProfile = { ...profile, ...updates };
       setProfile(updatedProfile);
@@ -123,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      await signOut(firebaseAuth);
+      await auth().signOut();
       setUser(null);
       setProfile(null);
     } catch (error) {
@@ -132,23 +85,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /* 🧩 Update user’s selected class */
+  // Update user's selected class
   const updateUserSelectedClass = async (uid, classId) => {
     try {
-      const userRef = doc(firestoreDB, "users", uid);
-      await updateDoc(userRef, { selectedClass: classId });
+      const userRef = firestore().collection("users").doc(uid);
+      await userRef.update({ selectedClass: classId });
     } catch (error) {
       console.error("Error updating user selected class:", error);
       throw error;
     }
   };
 
-  /* 📦 Get user profile (with saved class) */
+  // Get user profile with saved class
   const getUserProfile = async (uid) => {
     try {
-      const ref = doc(firestoreDB, "users", uid);
-      const snap = await getDoc(ref);
-      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+      const userRef = firestore().collection("users").doc(uid);
+      const snap = await userRef.get();
+      return snap.exists ? { id: snap.id, ...snap.data() } : null;
     } catch (error) {
       console.error("Error fetching user profile:", error);
       return null;
@@ -157,26 +110,23 @@ export const AuthProvider = ({ children }) => {
 
   // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      firebaseAuth,
-      async (currentUser) => {
-        console.log("Auth state changed:", currentUser);
-        try {
-          if (currentUser) {
-            setUser(currentUser);
-            const userProfile = await getUserData(currentUser.uid);
-            setProfile(userProfile);
-          } else {
-            setUser(null);
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error("Auth state error:", error);
-        } finally {
-          setLoading(false);
+    const unsubscribe = auth().onAuthStateChanged(async (currentUser) => {
+      console.log("Auth state changed:", currentUser);
+      try {
+        if (currentUser) {
+          setUser(currentUser);
+          const userProfile = await getUserData(currentUser.uid);
+          setProfile(userProfile);
+        } else {
+          setUser(null);
+          setProfile(null);
         }
+      } catch (error) {
+        console.error("Auth state error:", error);
+      } finally {
+        setLoading(false);
       }
-    );
+    });
 
     return () => unsubscribe();
   }, []);
@@ -189,7 +139,6 @@ export const AuthProvider = ({ children }) => {
         loading,
         signup,
         login,
-        loginWithGoogle,
         logout,
         getUserData,
         updateProfile,
