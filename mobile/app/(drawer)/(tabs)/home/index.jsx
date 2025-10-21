@@ -72,11 +72,16 @@ export default function HomeScreen() {
         {subjects.map((subject) => (
           <View key={subject.id} style={styles.subjectCard}>
             <Text
-              onPress={() =>
+              // onPress={() =>
+              //   router.push(
+              //     `/home/subject/${subject.id}?classId=${selectedClass}`
+              //   )
+              // }
+              onPress={() => {
                 router.push(
-                  `/home/subject/${subject.id}?classId=${selectedClass}`
-                )
-              }
+                  `/(drawer)/(tabs)/home/subject/${subject.id}?classId=${selectedClass}`
+                );
+              }}
               style={styles.subjectText}
             >
               📘 {subject.name}
@@ -100,7 +105,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: COLORS.primary,
   },
   subjectContainer: {
     borderBottomColor: "#ccc",
