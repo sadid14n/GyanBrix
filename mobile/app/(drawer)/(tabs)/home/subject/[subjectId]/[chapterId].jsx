@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
 });
 
-/* ---------------------- 🧾 HTML STYLES ---------------------- */
+// /* ---------------------- 🧾 HTML STYLES ---------------------- */
 const htmlStyles = {
   p: {
     fontSize: 16,
