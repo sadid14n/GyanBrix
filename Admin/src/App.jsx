@@ -8,6 +8,7 @@ import Classes from "./pages/admin/Classes";
 import Subjects from "./pages/admin/Subjects";
 import Chapters from "./pages/admin/Chapters";
 import ViewChapter from "./pages/admin/ViewChapter";
+import Login from "./pages/Auth/LoginPage";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/home" element={<Home />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="classes" element={<Classes />} />
