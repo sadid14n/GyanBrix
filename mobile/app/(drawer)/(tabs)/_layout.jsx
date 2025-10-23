@@ -42,20 +42,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile/index"
+        name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="setting/index"
-        options={{
-          title: "Setting",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />
