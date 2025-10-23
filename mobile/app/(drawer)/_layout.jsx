@@ -24,12 +24,6 @@ const CustomDrawerContent = (props) => {
         onPress={() => router.push("/(drawer)/(tabs)/profile")}
         focused={pathname === "/profile"}
       />
-      <DrawerItem
-        label={"Setting"}
-        onPress={() => router.push("/(drawer)/(tabs)/setting")}
-        focused={pathname === "/setting"}
-      />
-
       <View
         style={{
           marginTop: 20,
