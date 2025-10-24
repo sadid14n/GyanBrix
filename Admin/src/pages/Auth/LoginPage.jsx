@@ -63,7 +63,7 @@ const Login = ({ onSwitch }) => {
     try {
       await confirmationResult.confirm(otp);
       alert("Phone verified successfully!");
-      navigate("/dashboard"); // Redirect after successful login
+      navigate("/admin");
     } catch (error) {
       console.error("Invalid OTP", error);
       alert("Invalid OTP. Try again.");
