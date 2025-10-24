@@ -34,6 +34,7 @@ const Signup = () => {
         name,
         email,
         phoneNumber: user.phoneNumber || "",
+        role: "user",
         createdAt: new Date().toISOString(),
       });
 
