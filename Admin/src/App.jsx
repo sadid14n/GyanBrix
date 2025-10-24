@@ -9,25 +9,94 @@ import Subjects from "./pages/admin/Subjects";
 import Chapters from "./pages/admin/Chapters";
 import ViewChapter from "./pages/admin/ViewChapter";
 import Login from "./pages/Auth/LoginPage";
+import ProtectedRoute from "./component/ProtectedRoute";
+import Unauthorized from "./pages/Unauthorized";
+import PublicRoute from "./component/PublicRoute";
 
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="classes" element={<Classes />} />
-        <Route path="subjects" element={<Subjects />} />
-        <Route path="chapters" element={<Chapters />} />
+      {/* Auth */}
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <Signup />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+
+      {/* Home */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "user"]}>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          index
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="classes"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Classes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="subjects"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Subjects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="chapters"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Chapters />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="chapters/:classId/:subjectId/:chapterId"
-          element={<ViewChapter />}
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ViewChapter />
+            </ProtectedRoute>
+          }
         />
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
+
+      <Route path="/unauthorized" element={<Unauthorized />} />
     </Routes>
   );
 };
