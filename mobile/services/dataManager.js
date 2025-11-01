@@ -1,11 +1,13 @@
 // import firestore from "@react-native-firebase/firestore";
 
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
   getDocs,
   getFirestore,
+  serverTimestamp,
 } from "@react-native-firebase/firestore";
 import { firebaseApp, firestoreDB } from "./firebaseConfig";
 
@@ -105,5 +107,18 @@ export const getClassName = async (classId) => {
   } catch (error) {
     console.error("Error fetching class name:", error);
     return "Error";
+  }
+};
+
+export const submitFeedback = async (feedbackData) => {
+  try {
+    await addDoc(collection(db, "feedback"), {
+      ...feedbackData,
+      createdAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    throw error;
   }
 };
