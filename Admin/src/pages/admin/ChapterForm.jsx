@@ -1,6 +1,13 @@
-import React from "react";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from "firebase/storage";
+import React, { useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import { firebaseStorage } from "../../firebase/firebaseConfig";
 
 const ChapterForm = ({
   isOpen,
@@ -12,24 +19,94 @@ const ChapterForm = ({
   formData,
   setFormData,
 }) => {
+  const quillRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(null);
+
+  // Custom Image Upload Handler
+  const imageHandler = () => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const imageRef = ref(
+        firebaseStorage,
+        `chapterImages/${Date.now()}-${file.name}`
+      );
+
+      const uploadTask = uploadBytesResumable(imageRef, file);
+      setUploadProgress(0);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          console.error("Image upload failed:", error);
+          setUploadProgress(null);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const quill = quillRef.current.getEditor();
+          const range = quill.getSelection();
+          quill.insertEmbed(range.index, "image", downloadURL);
+          setUploadProgress(null);
+        }
+      );
+    };
+  };
+
+  // const quillModules = {
+  //   toolbar: [
+  //     [{ header: [1, 2, 3, 4, 5, 6, false] }],
+  //     [{ font: [] }],
+  //     [{ size: ["small", false, "large", "huge"] }],
+  //     ["bold", "italic", "underline", "strike"],
+  //     [{ color: [] }, { background: [] }],
+  //     [{ script: "sub" }, { script: "super" }],
+  //     [{ list: "ordered" }, { list: "bullet" }],
+  //     [{ indent: "-1" }, { indent: "+1" }],
+  //     [{ direction: "rtl" }],
+  //     [{ align: [] }],
+  //     ["link", "image", "video"],
+  //     ["code-block"],
+  //     ["clean"],
+  //   ],
+  //   clipboard: {
+  //     matchVisual: false,
+  //   },
+  //   handlers: {
+  //     image: imageHandler, // custom handler
+  //   },
+  // };
+
   const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ font: [] }],
-      [{ size: ["small", false, "large", "huge"] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
-      [{ script: "sub" }, { script: "super" }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ indent: "-1" }, { indent: "+1" }],
-      [{ direction: "rtl" }],
-      [{ align: [] }],
-      ["link", "image", "video"],
-      ["code-block"],
-      ["clean"],
-    ],
-    clipboard: {
-      matchVisual: false,
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
+        [{ size: ["small", false, "large", "huge"] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ script: "sub" }, { script: "super" }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ indent: "-1" }, { indent: "+1" }],
+        [{ direction: "rtl" }],
+        [{ align: [] }],
+        ["link", "image", "video"],
+        ["code-block"],
+        ["clean"],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
     },
   };
 
@@ -147,6 +224,11 @@ const ChapterForm = ({
                   style={{ minHeight: "200px" }}
                 />
               </div>
+              {uploadProgress !== null && (
+                <div className="mt-2 text-sm text-blue-600">
+                  Uploading Image... {uploadProgress}%
+                </div>
+              )}
             </div>
 
             {/* Buttons */}
