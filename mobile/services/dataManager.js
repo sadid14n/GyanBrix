@@ -1,10 +1,26 @@
-import firestore from "@react-native-firebase/firestore";
+// import firestore from "@react-native-firebase/firestore";
+
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+} from "@react-native-firebase/firestore";
+import { firebaseApp, firestoreDB } from "./firebaseConfig";
+
+const db = getFirestore(firebaseApp);
 
 /* --------------------------- 📚 CLASS FUNCTIONS --------------------------- */
+
 export const getAllClasses = async () => {
   try {
-    const snapshot = await firestore().collection("classes").get();
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const q = collection(db, "classes");
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+    }));
   } catch (error) {
     console.error("Error fetching classes:", error);
     throw error;
@@ -12,18 +28,15 @@ export const getAllClasses = async () => {
 };
 
 /* -------------------------- 📘 SUBJECT FUNCTIONS -------------------------- */
+
 export const getAllSubjects = async (classId) => {
   try {
-    const snapshot = await firestore()
-      .collection("classes")
-      .doc(classId)
-      .collection("subjects")
-      .get();
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
+    const q = collection(db, "classes", classId, "subjects");
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
       classId,
-      ...doc.data(),
+      ...docSnap.data(),
     }));
   } catch (error) {
     console.error(`Error fetching subjects for class ${classId}:`, error);
@@ -32,19 +45,21 @@ export const getAllSubjects = async (classId) => {
 };
 
 /* -------------------------- 📖 CHAPTER FUNCTIONS -------------------------- */
+
 export const getAllChapters = async (classId, subjectId) => {
   try {
-    const snapshot = await firestore()
-      .collection("classes")
-      .doc(classId)
-      .collection("subjects")
-      .doc(subjectId)
-      .collection("chapters")
-      .get();
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const q = collection(
+      db,
+      "classes",
+      classId,
+      "subjects",
+      subjectId,
+      "chapters"
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
     }));
   } catch (error) {
     console.error(
@@ -57,15 +72,16 @@ export const getAllChapters = async (classId, subjectId) => {
 
 export const getChapter = async (classId, subjectId, chapterId) => {
   try {
-    const docSnap = await firestore()
-      .collection("classes")
-      .doc(classId)
-      .collection("subjects")
-      .doc(subjectId)
-      .collection("chapters")
-      .doc(chapterId)
-      .get();
-
+    const docRef = doc(
+      db,
+      "classes",
+      classId,
+      "subjects",
+      subjectId,
+      "chapters",
+      chapterId
+    );
+    const docSnap = await getDoc(docRef);
     return docSnap.exists ? { id: docSnap.id, ...docSnap.data() } : null;
   } catch (error) {
     console.error(
@@ -73,5 +89,21 @@ export const getChapter = async (classId, subjectId, chapterId) => {
       error
     );
     throw error;
+  }
+};
+
+export const getClassName = async (classId) => {
+  try {
+    if (!classId) return "N/A";
+    const classRef = doc(firestoreDB, "classes", classId);
+    const classSnap = await getDoc(classRef);
+    if (classSnap.exists()) {
+      return classSnap.data().name || "Unknown Class";
+    } else {
+      return "Unknown Class";
+    }
+  } catch (error) {
+    console.error("Error fetching class name:", error);
+    return "Error";
   }
 };

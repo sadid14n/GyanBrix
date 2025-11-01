@@ -1,6 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -15,9 +13,21 @@ import {
 import COLORS from "../../constants/color";
 import styles from "../../constants/styles/login.style";
 
+import { getAuth } from "@react-native-firebase/auth";
+import {
+  doc,
+  getFirestore,
+  serverTimestamp,
+  setDoc,
+} from "@react-native-firebase/firestore";
+import { firebaseApp } from "../../services/firebaseConfig";
+
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
 const Signup = () => {
   const router = useRouter();
-  const user = auth().currentUser;
+  const user = auth.currentUser;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,17 +46,18 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const userRef = firestore().collection("users").doc(user.uid);
+      const userRef = doc(db, "users", user.uid);
 
-      await userRef.set(
+      await setDoc(
+        userRef,
         {
           name: name.trim(),
           email: email.trim(),
           phone: user.phoneNumber || null,
           role: "user",
-          createdAt: firestore.FieldValue.serverTimestamp(),
+          createdAt: serverTimestamp(),
         },
-        { merge: true } // merge ensures we don’t overwrite existing data
+        { merge: true }
       );
 
       Alert.alert("Success", "Your details have been saved successfully!");

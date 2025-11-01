@@ -91,15 +91,6 @@ export default function EditProfile() {
         style={styles.input}
       />
 
-      {/* Class */}
-      <TextInput
-        placeholder="Class"
-        placeholderTextColor="#a8a8a8ff"
-        value={form.class}
-        onChangeText={(v) => handleChange("class", v)}
-        style={styles.input}
-      />
-
       {/* Institute */}
       <TextInput
         placeholder="Institute"
