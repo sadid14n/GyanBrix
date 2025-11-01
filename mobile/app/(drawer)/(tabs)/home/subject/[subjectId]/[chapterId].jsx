@@ -10,13 +10,17 @@ import {
 } from "react-native";
 import RenderHtml from "react-native-render-html";
 import { getChapter } from "../../../../../../services/dataManager";
+import { useAuth } from "../../../../../../services/userManager";
 
 export default function ChapterContent() {
   const { subjectId, chapterId, classId } = useLocalSearchParams();
   const { width } = useWindowDimensions();
 
+  const { getUserName } = useAuth();
+
   const [chapter, setChapter] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authorName, setAuthorName] = useState("Loading...");
 
   // Fetch single chapter details from Firestore
   useEffect(() => {
@@ -24,6 +28,14 @@ export default function ChapterContent() {
       try {
         const data = await getChapter(classId, subjectId, chapterId);
         setChapter(data);
+
+        // 2️⃣ Fetch author name using userId from chapter.createdBy
+        if (data?.createdBy) {
+          const name = await getUserName(data.createdBy);
+          setAuthorName(name);
+        } else {
+          setAuthorName("Unknown Author");
+        }
       } catch (error) {
         console.error("Error fetching chapter content:", error);
       } finally {
@@ -70,8 +82,8 @@ export default function ChapterContent() {
 
       {/* Author & Date */}
       <View style={styles.metaContainer}>
-        <Text style={styles.metaText}>✍️ Author: {chapter.createdBy}</Text>
-        <Text style={styles.metaText}>📅 Updated: {formattedDate}</Text>
+        <Text style={styles.metaText}>Author: {authorName}</Text>
+        <Text style={styles.metaText}>Updated: {formattedDate}</Text>
       </View>
 
       {/* HTML Content */}

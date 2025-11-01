@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import auth from "@react-native-firebase/auth";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -14,6 +13,11 @@ import {
 } from "react-native";
 import COLORS from "../../constants/color";
 import styles from "../../constants/styles/login.style";
+
+import { getAuth, signInWithPhoneNumber } from "@react-native-firebase/auth";
+import { firebaseApp } from "../../services/firebaseConfig";
+
+const auth = getAuth(firebaseApp);
 
 const Login = () => {
   const router = useRouter();
@@ -32,8 +36,8 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const confirmationResult = await auth().signInWithPhoneNumber(phone);
-      setConfirm(confirmationResult);
+      const confirmation = await signInWithPhoneNumber(auth, phone);
+      setConfirm(confirmation);
       Alert.alert("Success", "OTP sent successfully!");
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -52,7 +56,7 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const result = await confirm.confirm(code); // confirms the OTP
+      await confirm.confirm(code); // confirms the OTP
       Alert.alert("Success", "Phone number verified successfully!");
       // ✅ Navigate to signup or home after verification
       router.replace("/(auth)/signup");
@@ -149,7 +153,7 @@ const Login = () => {
             )}
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Text style={styles.footerText}>Do not have an account?</Text>
               <Link href={"/signup"} asChild>
                 <TouchableOpacity>
                   <Text style={styles.link}>Sign Up</Text>

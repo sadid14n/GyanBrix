@@ -11,25 +11,19 @@ import {
 } from "react-native";
 
 import {
-  RewardedAd,
-  RewardedAdEventType,
-  TestIds,
-} from "react-native-google-mobile-ads";
-
-import {
   getAllClasses,
   getAllSubjects,
 } from "../../../../services/dataManager";
 import { useAuth } from "../../../../services/userManager";
 import COLORS from "./../../../../constants/color";
 
-const adUnitId = __DEV__
-  ? TestIds.REWARDED
-  : "ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy";
+// const adUnitId = __DEV__
+//   ? TestIds.REWARDED
+//   : "ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy";
 
-const rewarded = RewardedAd.createForAdRequest(adUnitId, {
-  keywords: ["fashion", "clothing"],
-});
+// const rewarded = RewardedAd.createForAdRequest(adUnitId, {
+//   keywords: ["fashion", "clothing"],
+// });
 
 export default function HomeScreen() {
   const [classes, setClasses] = useState([]);
@@ -42,30 +36,30 @@ export default function HomeScreen() {
 
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const unsubscribeLoaded = rewarded.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => {
-        setLoaded(true);
-        rewarded.show();
-      }
-    );
-    const unsubscribeEarned = rewarded.addAdEventListener(
-      RewardedAdEventType.EARNED_REWARD,
-      (reward) => {
-        console.log("User earned reward of ", reward);
-      }
-    );
+  // useEffect(() => {
+  //   const unsubscribeLoaded = rewarded.addAdEventListener(
+  //     RewardedAdEventType.LOADED,
+  //     () => {
+  //       setLoaded(true);
+  //       rewarded.show();
+  //     }
+  //   );
+  //   const unsubscribeEarned = rewarded.addAdEventListener(
+  //     RewardedAdEventType.EARNED_REWARD,
+  //     (reward) => {
+  //       console.log("User earned reward of ", reward);
+  //     }
+  //   );
 
-    // Start loading the rewarded ad straight away
-    rewarded.load();
+  //   // Start loading the rewarded ad straight away
+  //   rewarded.load();
 
-    // Unsubscribe from events on unmount
-    return () => {
-      unsubscribeLoaded();
-      unsubscribeEarned();
-    };
-  }, []);
+  //   // Unsubscribe from events on unmount
+  //   return () => {
+  //     unsubscribeLoaded();
+  //     unsubscribeEarned();
+  //   };
+  // }, []);
 
   // Fetch user profile and load classes
   useEffect(() => {

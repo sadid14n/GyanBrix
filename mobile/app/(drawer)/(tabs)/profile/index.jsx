@@ -1,12 +1,43 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import COLORS from "../../../../constants/color";
 import { useAuth } from "../../../../services/userManager";
 
 export default function Profile() {
-  const { profile, user } = useAuth();
+  const { profile, user, setProfile, refreshProfileFromFirebase } = useAuth();
+  const [loading, setLoading] = useState(true);
 
-  if (!profile) {
+  const [className, setClassName] = useState("Loading...");
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (!user?.uid) return;
+        setLoading(true);
+
+        const updatedProfile = await refreshProfileFromFirebase(user.uid);
+        if (updatedProfile) setProfile(updatedProfile);
+
+        setLoading(false);
+      };
+      fetchData();
+    }, [user?.uid])
+  );
+
+  // useEffect(() => {
+  //   const fetchClass = async () => {
+  //     if (profile?.selectedClass) {
+  //       const name = await getClassName(profile.selectedClass);
+  //       setClassName(name);
+  //     } else {
+  //       setClassName("Not assigned");
+  //     }
+  //   };
+  //   fetchClass();
+  // }, [profile?.selectedClass]);
+
+  if (loading || !profile) {
     return (
       <View
         style={{
@@ -85,6 +116,7 @@ export default function Profile() {
         {renderDetail("Full Name", profile.name)}
         {renderDetail("Email", profile.email)}
         {renderDetail("Date of Birth", profile.dob)}
+        {renderDetail("State", profile.state)}
         {renderDetail("District", profile.district)}
         {renderDetail("Town", profile.town)}
         {renderDetail("PIN Code", profile.pin)}
@@ -103,7 +135,7 @@ export default function Profile() {
           Academic Details
         </Text>
 
-        {renderDetail("Class", profile.selectedClass)}
+        {renderDetail("Class", profile.className || "Not assigned")}
         {renderDetail("School/Institute", profile.institute || "N/A")}
       </View>
     </ScrollView>

@@ -79,13 +79,13 @@ export default function Chapters() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.headerCard}>
+      {/* <View style={styles.headerCard}>
         <Text style={styles.headerIcon}>📘</Text>
         <View>
           <Text style={styles.headerTitle}>Chapters</Text>
           <Text style={styles.headerSubtitle}>for {subjectId}</Text>
         </View>
-      </View>
+      </View> */}
 
       {/* Chapter List */}
       {chapters.length > 0 ? (
