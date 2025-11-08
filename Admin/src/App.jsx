@@ -12,6 +12,7 @@ import Login from "./pages/Auth/LoginPage";
 import ProtectedRoute from "./component/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized";
 import PublicRoute from "./component/PublicRoute";
+import AdminManagement from "./pages/admin/AdminManagement";
 
 const App = () => {
   return (
@@ -90,6 +91,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <ViewChapter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin-management"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminManagement />
             </ProtectedRoute>
           }
         />

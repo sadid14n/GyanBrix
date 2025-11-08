@@ -1,32 +1,70 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import { setGlobalOptions } from "firebase-functions/v2";
+import { onCall } from "firebase-functions/v2/https";
+import * as logger from "firebase-functions/logger";
+import admin from "firebase-admin";
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const logger = require("firebase-functions/logger");
-
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
+// ✅ Limit function instances (optional cost control)
 setGlobalOptions({ maxInstances: 10 });
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+// ✅ Initialize Firebase Admin SDK
+admin.initializeApp();
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+/**
+ * ✅ Make a user an admin
+ * Only existing admins can call this function.
+ */
+export const setAdminRole = onCall(async (request) => {
+  const context = request.auth;
+  const email = request.data.email;
+
+  if (!context) {
+    throw new Error("Not authenticated. Please login first.");
+  }
+
+  // ✅ Only admins can assign admin role
+  if (context.token.role !== "admin") {
+    throw new Error("Permission denied. Only admins can assign admin role.");
+  }
+
+  try {
+    const user = await admin.auth().getUserByEmail(email);
+
+    await admin.auth().setCustomUserClaims(user.uid, { role: "admin" });
+
+    logger.info(`✅ Admin role assigned to: ${email}`);
+
+    return { message: `${email} is now an admin.` };
+  } catch (error) {
+    logger.error(error);
+    throw new Error(error.message);
+  }
+});
+
+/**
+ * ✅ Remove admin role
+ */
+export const removeAdminRole = onCall(async (request) => {
+  const context = request.auth;
+  const email = request.data.email;
+
+  if (!context) {
+    throw new Error("Not authenticated.");
+  }
+
+  if (context.token.role !== "admin") {
+    throw new Error("Only admins can remove admin role.");
+  }
+
+  try {
+    const user = await admin.auth().getUserByEmail(email);
+
+    await admin.auth().setCustomUserClaims(user.uid, { role: "user" });
+
+    logger.info(`✅ Admin role removed from: ${email}`);
+
+    return { message: `${email} is now a normal user.` };
+  } catch (error) {
+    logger.error(error);
+    throw new Error(error.message);
+  }
+});

@@ -22,6 +22,11 @@ const AdminLayout = () => {
     { name: "Classes", href: "/admin/classes", icon: GraduationCap },
     { name: "Subjects", href: "/admin/subjects", icon: BookOpen },
     { name: "Chapters", href: "/admin/chapters", icon: FileText },
+    {
+      name: "Admin Management",
+      href: "/admin/admin-management",
+      icon: FileText,
+    },
   ];
 
   const isActive = (path) => location.pathname === path;
