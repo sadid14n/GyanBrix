@@ -1,4 +1,5 @@
-import firestore from "@react-native-firebase/firestore";
+import { firestoreDB } from "@/services/firebaseConfig";
+import { doc, onSnapshot } from "@react-native-firebase/firestore";
 import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -20,24 +21,6 @@ function MainLayout() {
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
 
-  // Check Firestore doc if user is signed in
-  // useEffect(() => {
-  //   const checkUserProfile = async () => {
-  //     if (user) {
-  //       try {
-  //         const userRef = firestore().collection("users").doc(user.uid);
-  //         const userSnap = await userRef.get();
-  //         setHasProfile(userSnap.exists);
-  //       } catch (error) {
-  //         console.error("Error checking Firestore user:", error);
-  //       }
-  //     }
-  //     setCheckingProfile(false);
-  //   };
-
-  //   checkUserProfile();
-  // }, [user]);
-
   useEffect(() => {
     if (!user) {
       setHasProfile(false);
@@ -45,19 +28,19 @@ function MainLayout() {
       return;
     }
 
-    const unsubscribe = firestore()
-      .collection("users")
-      .doc(user.uid)
-      .onSnapshot(
-        (doc) => {
-          setHasProfile(doc.exists);
-          setCheckingProfile(false);
-        },
-        (error) => {
-          console.error("Error checking Firestore user:", error);
-          setCheckingProfile(false);
-        }
-      );
+    const userDocRef = doc(firestoreDB, "users", user.uid);
+
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      (snapshot) => {
+        setHasProfile(snapshot.exists);
+        setCheckingProfile(false);
+      },
+      (error) => {
+        console.error("Error checking Firestore user:", error);
+        setCheckingProfile(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [user]);
@@ -70,31 +53,6 @@ function MainLayout() {
   }, [loading, checkingProfile]);
 
   // Redirect logic
-  // useEffect(() => {
-  //   if (loading || checkingProfile || segments.length === 0) return;
-
-  //   const isSignedIn = !!user;
-
-  //   if (!isSignedIn) {
-  //     router.replace("/(auth)");
-  //   } else if (isSignedIn && !hasProfile) {
-  //     router.replace("/(auth)/signup");
-  //   } else if (isSignedIn && hasProfile) {
-  //     router.replace("/(drawer)/(tabs)/home");
-  //   }
-  // }, [user, loading, hasProfile, checkingProfile, segments]);
-
-  // useEffect(() => {
-  //   if (loading || checkingProfile || segments.length === 0) return;
-
-  //   if (!user) {
-  //     router.replace("/(auth)");
-  //   } else if (user && !hasProfile) {
-  //     router.replace("/(auth)/signup");
-  //   } else if (user && hasProfile) {
-  //     router.replace("/(drawer)/(tabs)/home");
-  //   }
-  // }, [user, loading, hasProfile, checkingProfile, segments]);
   useEffect(() => {
     if (loading || checkingProfile || segments.length === 0) return;
 

@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ✅ Admin protected write access
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if request.auth.token.role == "admin";
+    }
+
+    match /classes/{classId}/subjects/{subjectId} {
+      allow read: if true;
+      allow write: if request.auth.token.role == "admin";
+    }
+
+    match /classes/{classId}/subjects/{subjectId}/chapters/{chapterId} {
+      allow read: if true;
+      allow write: if request.auth.token.role == "admin";
+    }
+
+    // ✅ Each user can only modify their own profile
+    match /users/{uid} {
+      allow read, write: if request.auth.uid == uid;
+    }
+
+    // ✅ Feedback is write-only for logged-in users
+    match /feedback/{docId} {
+      allow read: if false;
+      allow write: if request.auth != null;
+    }
+  }
+}
+
+
+firebase deploy --only firestore:rules
