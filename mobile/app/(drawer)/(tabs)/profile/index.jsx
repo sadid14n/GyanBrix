@@ -1,14 +1,21 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import COLORS from "../../../../constants/color";
 import { useAuth } from "../../../../services/userManager";
 
 export default function Profile() {
-  const { profile, user, setProfile, refreshProfileFromFirebase } = useAuth();
+  const { profile, user, setProfile, refreshProfileFromFirebase, logout } =
+    useAuth();
   const [loading, setLoading] = useState(true);
-
-  const [className, setClassName] = useState("Loading...");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -25,17 +32,17 @@ export default function Profile() {
     }, [user?.uid])
   );
 
-  // useEffect(() => {
-  //   const fetchClass = async () => {
-  //     if (profile?.selectedClass) {
-  //       const name = await getClassName(profile.selectedClass);
-  //       setClassName(name);
-  //     } else {
-  //       setClassName("Not assigned");
-  //     }
-  //   };
-  //   fetchClass();
-  // }, [profile?.selectedClass]);
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await logout();
+      setLoggingOut(false);
+      router.replace("../../../(auth)"); // redirect to login after logout
+    } catch (error) {
+      console.error("Logout error:", error);
+      setLoggingOut(false);
+    }
+  };
 
   if (loading || !profile) {
     return (
@@ -138,6 +145,35 @@ export default function Profile() {
         {renderDetail("Class", profile.className || "Not assigned")}
         {renderDetail("School/Institute", profile.institute || "N/A")}
       </View>
+
+      {/* 🔘 Simple Logout Button */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: "#E53935",
+          paddingVertical: 14,
+          borderRadius: 10,
+          alignItems: "center",
+          marginTop: 20,
+          marginBottom: 40,
+        }}
+        onPress={handleLogout}
+        disabled={loggingOut}
+      >
+        {loggingOut ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text
+            style={{
+              color: "#fff",
+              fontWeight: "700",
+              fontSize: 16,
+              letterSpacing: 0.5,
+            }}
+          >
+            LOG OUT
+          </Text>
+        )}
+      </TouchableOpacity>
     </ScrollView>
   );
 }
