@@ -1,6 +1,8 @@
-import React from "react";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import React, { useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import { firebaseStorage } from "../../firebase/firebaseConfig";
 
 const ChapterForm = ({
   isOpen,
@@ -12,24 +14,82 @@ const ChapterForm = ({
   formData,
   setFormData,
 }) => {
+  const quillRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [isUploading, setIsUploading] = useState(false); // 🆕 prevent typing
+
+  // Custom Image Upload Handler
+  const imageHandler = () => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      // Disable typing while uploading
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      const imageRef = ref(
+        firebaseStorage,
+        `chapterImages/${Date.now()}-${file.name}`
+      );
+
+      const uploadTask = uploadBytesResumable(imageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          console.error("Image upload failed:", error);
+          setUploadProgress(null);
+          setIsUploading(false);
+        },
+        async () => {
+          // ✅ Wait until fully uploaded
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const quill = quillRef.current.getEditor();
+
+          // ✅ Ensure editor has a valid range before inserting
+          const range = quill.getSelection(true);
+          quill.insertEmbed(range.index, "image", downloadURL);
+          quill.setSelection(range.index + 1);
+
+          // Reset states
+          setUploadProgress(null);
+          setIsUploading(false);
+        }
+      );
+    };
+  };
+
   const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ font: [] }],
-      [{ size: ["small", false, "large", "huge"] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
-      [{ script: "sub" }, { script: "super" }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ indent: "-1" }, { indent: "+1" }],
-      [{ direction: "rtl" }],
-      [{ align: [] }],
-      ["link", "image", "video"],
-      ["code-block"],
-      ["clean"],
-    ],
-    clipboard: {
-      matchVisual: false,
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
+        [{ size: ["small", false, "large", "huge"] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ script: "sub" }, { script: "super" }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ indent: "-1" }, { indent: "+1" }],
+        [{ direction: "rtl" }],
+        [{ align: [] }],
+        ["link", "image", "video"],
+        ["code-block"],
+        ["clean"],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
     },
   };
 
@@ -136,17 +196,24 @@ const ChapterForm = ({
               >
                 Chapter Content/Solution
               </label>
-              <div className="bg-surface border border-border rounded-lg">
+              <div className="relative bg-surface border border-border rounded-lg">
                 <ReactQuill
+                  ref={quillRef}
                   theme="snow"
                   value={formData.content}
                   onChange={handleQuillChange}
                   modules={quillModules}
                   formats={quillFormats}
+                  readOnly={isUploading}
                   placeholder="Enter the chapter content, solutions, or study material..."
-                  style={{ minHeight: "200px" }}
+                  style={{ minHeight: "200px", opacity: isUploading ? 0.6 : 1 }}
                 />
               </div>
+              {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-blue-600 font-medium">
+                  Uploading image... {uploadProgress}%
+                </div>
+              )}
             </div>
 
             {/* Buttons */}
