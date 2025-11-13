@@ -106,46 +106,6 @@ export default function HomeScreen() {
     "#D0A8FF", // standard purple
   ];
 
-  // return (
-  //   <View style={{ flex: 1, padding: 16, backgroundColor: COLORS.background }}>
-  //     <View style={styles.container}>
-  //       <Picker
-  //         selectedValue={selectedClass}
-  //         onValueChange={(value) => handleClassChange(value)}
-  //         style={styles.picker}
-  //       >
-  //         <Picker.Item label="Select Class" value={null} />
-  //         {classes.map((cls) => (
-  //           <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
-  //         ))}
-  //       </Picker>
-  //     </View>
-
-  //     <View style={styles.subjectContainer}>
-  //       {subjects.map((subject, index) => {
-  //         const bgColor = SUBJECT_COLORS[index % SUBJECT_COLORS.length]; // cycle colors
-  //         return (
-  //           <View
-  //             key={subject.id}
-  //             style={[styles.subjectCard, { backgroundColor: bgColor }]}
-  //           >
-  //             <Text
-  //               onPress={() => {
-  //                 router.push(
-  //                   `/(drawer)/(tabs)/home/subject/${subject.id}?classId=${selectedClass}`
-  //                 );
-  //               }}
-  //               style={styles.subjectText}
-  //             >
-  //               {subject.name}
-  //             </Text>
-  //           </View>
-  //         );
-  //       })}
-  //     </View>
-  //   </View>
-  // );
-
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: COLORS.background }}
@@ -199,41 +159,6 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     alignItems: "flex-start", // picker stays on LHS
-//     justifyContent: "center",
-//     width: "100%",
-//   },
-//   picker: {
-//     width: 180, // adjust as needed
-//     height: 50,
-//     borderWidth: 1,
-//     borderColor: "#ccc",
-//     borderRadius: 8,
-//     backgroundColor: COLORS.primary,
-//   },
-//   subjectContainer: {
-//     borderBottomColor: "#ccc",
-//     paddingVertical: 10,
-//     width: "100%",
-//   },
-//   subjectCard: {
-//     backgroundColor: "#f8ceebff",
-//     borderRadius: 8,
-//     padding: 10,
-//     marginVertical: 5,
-//     height: 100,
-//     justifyContent: "center",
-//   },
-//   subjectText: {
-//     fontSize: 26,
-//     paddingLeft: 14,
-//     color: COLORS.textPrimary,
-//     fontWeight: "bold",
-//   },
-// });
 
 const styles = StyleSheet.create({
   headerContainer: {
