@@ -125,8 +125,6 @@ export default function HomeScreen() {
   //   };
   // }, []);
 
-  const num = 120;
-
   // Fetch user profile and load classes
 
   useEffect(() => {
@@ -188,59 +186,6 @@ export default function HomeScreen() {
       />
     </View>
   );
-
-  // return (
-  //   <ScrollView
-  //     style={{ flex: 1, backgroundColor: COLORS.background }}
-  //     contentContainerStyle={{ padding: 16 }}
-  //     showsVerticalScrollIndicator={false}
-  //   >
-  //     {/* Header */}
-  //     <View style={styles.headerContainer}>
-  //       <Text style={styles.headerTitle}>📚 Select Your Class</Text>
-  //       <View style={styles.pickerWrapper}>
-  //         <Picker
-  //           selectedValue={selectedClass}
-  //           onValueChange={(value) => handleClassChange(value)}
-  //           style={styles.picker}
-  //           dropdownIconColor={COLORS.textPrimary}
-  //         >
-  //           <Picker.Item label="Select Class" value={null} />
-  //           {classes.map((cls) => (
-  //             <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
-  //           ))}
-  //         </Picker>
-  //       </View>
-  //     </View>
-
-  //     {/* Subject Cards */}
-  //     {selectedClass && (
-  //       <View style={styles.subjectContainer}>
-  //         <Text style={styles.subjectHeading}>Subjects</Text>
-
-  //         <View style={styles.subjectGrid}>
-  //           {subjects.map((subject, index) => {
-  //             const bgColor = SUBJECT_COLORS[index % SUBJECT_COLORS.length];
-  //             return (
-  //               <TouchableOpacity
-  //                 key={subject.id}
-  //                 style={[styles.subjectCard, { backgroundColor: bgColor }]}
-  //                 activeOpacity={0.8}
-  //                 onPress={() =>
-  //                   router.push(
-  //                     `/(drawer)/(tabs)/home/subject/${subject.id}?classId=${selectedClass}`
-  //                   )
-  //                 }
-  //               >
-  //                 <Text style={styles.subjectText}>{subject.name}</Text>
-  //               </TouchableOpacity>
-  //             );
-  //           })}
-  //         </View>
-  //       </View>
-  //     )}
-  //   </ScrollView>
-  // );
 
   return (
     <ScrollView
