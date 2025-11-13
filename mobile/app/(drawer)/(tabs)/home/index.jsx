@@ -1,8 +1,11 @@
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Dimensions,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,11 +14,22 @@ import {
 } from "react-native";
 
 import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+} from "@react-native-firebase/firestore";
+import {
   getAllClasses,
   getAllSubjects,
 } from "../../../../services/dataManager";
+import { firestoreDB } from "../../../../services/firebaseConfig";
 import { useAuth } from "../../../../services/userManager";
 import COLORS from "./../../../../constants/color";
+
+const { width } = Dimensions.get("window");
+const BANNER_HEIGHT = 180;
 
 // const adUnitId = __DEV__
 //   ? TestIds.REWARDED
@@ -30,11 +44,61 @@ export default function HomeScreen() {
   const [subjects, setSubjects] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState([]);
+  const [bannersLoading, setBannersLoading] = useState(true);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   const router = useRouter();
   const { user, getUserProfile, updateUserSelectedClass } = useAuth();
+  const scrollViewRef = useRef(null);
+  const bannerScrollRef = useRef(null);
 
-  const [loaded, setLoaded] = useState(false);
+  // Fetch banners
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const q = query(
+          collection(firestoreDB, "banners"),
+          orderBy("createdAt", "desc"),
+          limit(5)
+        );
+        const snapshot = await getDocs(q);
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setBanners(data);
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+      } finally {
+        setBannersLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  // Auto-scroll banners
+  useEffect(() => {
+    if (banners.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % banners.length;
+        bannerScrollRef.current?.scrollToOffset({
+          offset: nextIndex * width,
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 3000); // Change banner every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  // const [loaded, setLoaded] = useState(false);
 
   // useEffect(() => {
   //   const unsubscribeLoaded = rewarded.addAdEventListener(
@@ -62,6 +126,7 @@ export default function HomeScreen() {
   // }, []);
 
   // Fetch user profile and load classes
+
   useEffect(() => {
     const init = async () => {
       const cls = await getAllClasses();
@@ -89,8 +154,14 @@ export default function HomeScreen() {
     if (user) await updateUserSelectedClass(user.uid, classId);
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
-
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading your courses...</Text>
+      </View>
+    );
+  }
   const SUBJECT_COLORS = [
     "#FAD4D8", // soft pink
     "#CDE7FF", // light sky blue
@@ -106,55 +177,80 @@ export default function HomeScreen() {
     "#D0A8FF", // standard purple
   ];
 
-  // return (
-  //   <View style={{ flex: 1, padding: 16, backgroundColor: COLORS.background }}>
-  //     <View style={styles.container}>
-  //       <Picker
-  //         selectedValue={selectedClass}
-  //         onValueChange={(value) => handleClassChange(value)}
-  //         style={styles.picker}
-  //       >
-  //         <Picker.Item label="Select Class" value={null} />
-  //         {classes.map((cls) => (
-  //           <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
-  //         ))}
-  //       </Picker>
-  //     </View>
-
-  //     <View style={styles.subjectContainer}>
-  //       {subjects.map((subject, index) => {
-  //         const bgColor = SUBJECT_COLORS[index % SUBJECT_COLORS.length]; // cycle colors
-  //         return (
-  //           <View
-  //             key={subject.id}
-  //             style={[styles.subjectCard, { backgroundColor: bgColor }]}
-  //           >
-  //             <Text
-  //               onPress={() => {
-  //                 router.push(
-  //                   `/(drawer)/(tabs)/home/subject/${subject.id}?classId=${selectedClass}`
-  //                 );
-  //               }}
-  //               style={styles.subjectText}
-  //             >
-  //               {subject.name}
-  //             </Text>
-  //           </View>
-  //         );
-  //       })}
-  //     </View>
-  //   </View>
-  // );
+  const renderBannerItem = ({ item }) => (
+    <View style={styles.bannerSlide}>
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.bannerImage}
+        resizeMode="cover"
+      />
+    </View>
+  );
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: COLORS.background }}
-      contentContainerStyle={{ padding: 16 }}
+      ref={scrollViewRef}
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>📚 Select Your Class</Text>
+      {/* Banner Carousel */}
+      {!bannersLoading && banners.length > 0 && (
+        <View style={styles.bannerContainer}>
+          <Animated.FlatList
+            ref={bannerScrollRef}
+            data={banners}
+            renderItem={renderBannerItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(event) => {
+              const index = Math.round(
+                event.nativeEvent.contentOffset.x / width
+              );
+              setCurrentBannerIndex(index);
+            }}
+            decelerationRate="fast"
+            snapToInterval={width}
+            snapToAlignment="center"
+          />
+
+          {/* Pagination Dots */}
+          {banners.length > 1 && (
+            <View style={styles.pagination}>
+              {banners.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    index === currentBannerIndex && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Banner Loading State */}
+      {bannersLoading && (
+        <View style={styles.bannerLoadingContainer}>
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        </View>
+      )}
+
+      {/* Welcome Section */}
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeText}>Welcome Back! 👋</Text>
+        <Text style={styles.welcomeSubtext}>
+          Let's continue your learning journey
+        </Text>
+      </View>
+
+      {/* Class Selector */}
+      <View style={styles.classSelector}>
+        <Text style={styles.sectionTitle}>📚 Select Your Class</Text>
         <View style={styles.pickerWrapper}>
           <Picker
             selectedValue={selectedClass}
@@ -162,7 +258,7 @@ export default function HomeScreen() {
             style={styles.picker}
             dropdownIconColor={COLORS.textPrimary}
           >
-            <Picker.Item label="Select Class" value={null} />
+            <Picker.Item label="Choose a class..." value={null} />
             {classes.map((cls) => (
               <Picker.Item key={cls.id} label={cls.name} value={cls.id} />
             ))}
@@ -170,10 +266,13 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Subject Cards */}
-      {selectedClass && (
-        <View style={styles.subjectContainer}>
-          <Text style={styles.subjectHeading}>Subjects</Text>
+      {/* Subjects Section */}
+      {selectedClass ? (
+        <View style={styles.subjectsSection}>
+          <View style={styles.subjectHeader}>
+            <Text style={styles.sectionTitle}>📖 Your Subjects</Text>
+            <Text style={styles.subjectCount}>{subjects.length} subjects</Text>
+          </View>
 
           <View style={styles.subjectGrid}>
             {subjects.map((subject, index) => {
@@ -182,95 +281,244 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={subject.id}
                   style={[styles.subjectCard, { backgroundColor: bgColor }]}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                   onPress={() =>
                     router.push(
                       `/(drawer)/(tabs)/home/subject/${subject.id}?classId=${selectedClass}`
                     )
                   }
                 >
-                  <Text style={styles.subjectText}>{subject.name}</Text>
+                  <View style={styles.subjectIconContainer}>
+                    <Text style={styles.subjectIcon}>
+                      {getSubjectIcon(subject.name)}
+                    </Text>
+                  </View>
+                  <Text style={styles.subjectText} numberOfLines={2}>
+                    {subject.name}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
+        </View>
+      ) : (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateIcon}>🎯</Text>
+          <Text style={styles.emptyStateText}>
+            Select a class to view subjects
+          </Text>
         </View>
       )}
     </ScrollView>
   );
 }
 
+// Helper function to get subject icons
+function getSubjectIcon(subjectName) {
+  const name = subjectName.toLowerCase();
+  if (name.includes("math")) return "🔢";
+  if (name.includes("science")) return "🔬";
+  if (name.includes("english")) return "📝";
+  if (name.includes("history")) return "📜";
+  if (name.includes("geography")) return "🌍";
+  if (name.includes("physics")) return "⚛️";
+  if (name.includes("chemistry")) return "🧪";
+  if (name.includes("biology")) return "🧬";
+  if (name.includes("computer")) return "💻";
+  if (name.includes("art")) return "🎨";
+  if (name.includes("music")) return "🎵";
+  if (name.includes("physical")) return "⚽";
+  return "📚";
+}
+
 // const styles = StyleSheet.create({
-//   container: {
-//     alignItems: "flex-start", // picker stays on LHS
-//     justifyContent: "center",
-//     width: "100%",
+//   headerContainer: {
+//     backgroundColor: "#fff",
+//     borderRadius: 16,
+//     padding: 20,
+//     shadowColor: "#000",
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowOpacity: 0.15,
+//     shadowRadius: 5,
+//     elevation: 4,
+//     marginBottom: 20,
+//   },
+//   headerTitle: {
+//     fontSize: 20,
+//     fontWeight: "700",
+//     marginBottom: 10,
+//     color: COLORS.textPrimary,
+//   },
+//   pickerWrapper: {
+//     borderWidth: 1,
+//     borderColor: "#ddd",
+//     borderRadius: 12,
+//     overflow: "hidden",
 //   },
 //   picker: {
-//     width: 180, // adjust as needed
 //     height: 50,
-//     borderWidth: 1,
-//     borderColor: "#ccc",
-//     borderRadius: 8,
-//     backgroundColor: COLORS.primary,
+//     color: COLORS.textPrimary,
 //   },
 //   subjectContainer: {
-//     borderBottomColor: "#ccc",
-//     paddingVertical: 10,
-//     width: "100%",
+//     marginTop: 10,
+//   },
+//   subjectHeading: {
+//     fontSize: 22,
+//     fontWeight: "700",
+//     marginBottom: 10,
+//     color: COLORS.textPrimary,
+//   },
+//   subjectGrid: {
+//     flexDirection: "row",
+//     flexWrap: "wrap",
+//     justifyContent: "space-between",
 //   },
 //   subjectCard: {
-//     backgroundColor: "#f8ceebff",
-//     borderRadius: 8,
-//     padding: 10,
-//     marginVertical: 5,
-//     height: 100,
+//     width: "48%",
+//     borderRadius: 14,
+//     paddingVertical: 25,
+//     marginBottom: 12,
 //     justifyContent: "center",
+//     alignItems: "center",
+//     shadowColor: "#000",
+//     shadowOpacity: 0.15,
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowRadius: 4,
+//     elevation: 3,
 //   },
 //   subjectText: {
-//     fontSize: 26,
-//     paddingLeft: 14,
-//     color: COLORS.textPrimary,
-//     fontWeight: "bold",
+//     fontSize: 18,
+//     fontWeight: "700",
+//     color: "#333",
+//     textAlign: "center",
 //   },
 // });
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: "#fff",
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+  },
+  contentContainer: {
+    paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F7FA",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
+  },
+
+  // Banner Styles
+  bannerContainer: {
+    height: BANNER_HEIGHT + 40,
+    marginBottom: 10,
+  },
+  bannerLoadingContainer: {
+    height: BANNER_HEIGHT + 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bannerSlide: {
+    width: width,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  bannerImage: {
+    width: width - 32,
+    height: BANNER_HEIGHT,
+    borderRadius: 16,
+  },
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 12,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#DDD",
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: COLORS.primary || "#4A90E2",
+    width: 24,
+  },
+
+  // Welcome Section
+  welcomeSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  welcomeText: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginBottom: 4,
+  },
+  welcomeSubtext: {
+    fontSize: 15,
+    color: "#666",
+    fontWeight: "400",
+  },
+
+  // Class Selector
+  classSelector: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 16,
     borderRadius: 16,
     padding: 20,
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 4,
-    marginBottom: 20,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  headerTitle: {
+  sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    marginBottom: 10,
-    color: COLORS.textPrimary,
+    color: "#1A1A1A",
+    marginBottom: 12,
   },
   pickerWrapper: {
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 1.5,
+    borderColor: "#E0E0E0",
     borderRadius: 12,
+    backgroundColor: "#F9FAFB",
     overflow: "hidden",
   },
   picker: {
-    height: 50,
-    color: COLORS.textPrimary,
+    height: 52,
+    color: "#1A1A1A",
   },
-  subjectContainer: {
-    marginTop: 10,
+
+  // Subjects Section
+  subjectsSection: {
+    paddingHorizontal: 16,
   },
-  subjectHeading: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 10,
-    color: COLORS.textPrimary,
+  subjectHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  subjectCount: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "600",
+    backgroundColor: "#F0F0F0",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   subjectGrid: {
     flexDirection: "row",
@@ -279,21 +527,50 @@ const styles = StyleSheet.create({
   },
   subjectCard: {
     width: "48%",
-    borderRadius: 14,
-    paddingVertical: 25,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 4,
+    minHeight: 130,
+    justifyContent: "space-between",
+  },
+  subjectIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 12,
+  },
+  subjectIcon: {
+    fontSize: 24,
   },
   subjectText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#333",
+    color: "#1A1A1A",
+    lineHeight: 22,
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: "#999",
     textAlign: "center",
+    fontWeight: "500",
   },
 });
