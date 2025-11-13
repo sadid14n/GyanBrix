@@ -13,6 +13,8 @@ import ProtectedRoute from "./component/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized";
 import PublicRoute from "./component/PublicRoute";
 import AdminManagement from "./pages/admin/AdminManagement";
+import BannerUpload from "./pages/admin/BannerUpload";
+import BannerList from "./pages/admin/BannerList";
 
 const App = () => {
   return (
@@ -99,6 +101,22 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="banner-upload"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <BannerUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="banner-list"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <BannerList />
             </ProtectedRoute>
           }
         />
