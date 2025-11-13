@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 import {
   getAuth,
+  getIdTokenResult,
   onAuthStateChanged,
   signOut,
 } from "@react-native-firebase/auth";
@@ -135,6 +136,21 @@ export const AuthProvider = ({ children }) => {
           setUser(currentUser);
           const userProfile = await getUserData(currentUser.uid);
           setProfile(userProfile);
+
+          // ✅ Get the latest token result (includes custom claims)
+          try {
+            const idTokenResult = await getIdTokenResult(currentUser, true);
+            const role = idTokenResult.claims.role || "user";
+
+            // 🔥 Console log role + token info
+            console.log("👤 Auth state changed:");
+            console.log("UID:", currentUser.uid);
+            console.log("Phone:", currentUser.phoneNumber || currentUser.email);
+            console.log("Role from custom claim:", role);
+            console.log("Full token claims:", idTokenResult.claims);
+          } catch (error) {
+            console.error("Error fetching token claims:", error);
+          }
         } else {
           setUser(null);
           setProfile(null);
