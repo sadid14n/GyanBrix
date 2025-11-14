@@ -14,13 +14,15 @@
     "android": {
       "package": "com.gyanbrix.app",
       "googleServicesFile": "./google-services.json",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/icon/adaptive-icon.png",
         "monochromeImage": "./assets/images/icon/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.INTERNET"]
     },
     "web": {
       "output": "static",

@@ -244,7 +244,7 @@ export default function HomeScreen() {
       <View style={styles.welcomeSection}>
         <Text style={styles.welcomeText}>Welcome Back! 👋</Text>
         <Text style={styles.welcomeSubtext}>
-          Let's continue your learning journey
+          Let`s continue your learning journey
         </Text>
       </View>
 
