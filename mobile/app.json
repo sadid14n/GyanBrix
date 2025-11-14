@@ -22,7 +22,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": ["android.permission.INTERNET"]
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "output": "static",
@@ -59,6 +62,12 @@
       "eas": {
         "projectId": "02043254-c30a-413c-bf51-b9692aba76bf"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/02043254-c30a-413c-bf51-b9692aba76bf"
     }
   }
 }
