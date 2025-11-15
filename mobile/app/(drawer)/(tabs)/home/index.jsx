@@ -331,69 +331,6 @@ function getSubjectIcon(subjectName) {
   return "📚";
 }
 
-// const styles = StyleSheet.create({
-//   headerContainer: {
-//     backgroundColor: "#fff",
-//     borderRadius: 16,
-//     padding: 20,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.15,
-//     shadowRadius: 5,
-//     elevation: 4,
-//     marginBottom: 20,
-//   },
-//   headerTitle: {
-//     fontSize: 20,
-//     fontWeight: "700",
-//     marginBottom: 10,
-//     color: COLORS.textPrimary,
-//   },
-//   pickerWrapper: {
-//     borderWidth: 1,
-//     borderColor: "#ddd",
-//     borderRadius: 12,
-//     overflow: "hidden",
-//   },
-//   picker: {
-//     height: 50,
-//     color: COLORS.textPrimary,
-//   },
-//   subjectContainer: {
-//     marginTop: 10,
-//   },
-//   subjectHeading: {
-//     fontSize: 22,
-//     fontWeight: "700",
-//     marginBottom: 10,
-//     color: COLORS.textPrimary,
-//   },
-//   subjectGrid: {
-//     flexDirection: "row",
-//     flexWrap: "wrap",
-//     justifyContent: "space-between",
-//   },
-//   subjectCard: {
-//     width: "48%",
-//     borderRadius: 14,
-//     paddingVertical: 25,
-//     marginBottom: 12,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     shadowColor: "#000",
-//     shadowOpacity: 0.15,
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowRadius: 4,
-//     elevation: 3,
-//   },
-//   subjectText: {
-//     fontSize: 18,
-//     fontWeight: "700",
-//     color: "#333",
-//     textAlign: "center",
-//   },
-// });
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
