@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -142,6 +143,8 @@ const Signup = () => {
           age: calculateAge(dateOfBirth),
           phone: user.phoneNumber || null,
           role: "user",
+          privacyAccepted: acceptedTerms,
+          termsAccepted: acceptedTerms,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         },
@@ -347,10 +350,15 @@ const Signup = () => {
                   <View style={styles.termsTextContainer}>
                     <Text style={styles.termsText}>I agree to the </Text>
                     <TouchableOpacity
+                      // onPress={() =>
+                      //   Alert.alert(
+                      //     "Terms & Conditions",
+                      //     "Terms and Conditions content will be displayed here."
+                      //   )
+                      // }
                       onPress={() =>
-                        Alert.alert(
-                          "Terms & Conditions",
-                          "Terms and Conditions content will be displayed here."
+                        Linking.openURL(
+                          "http://127.0.0.1:3000/terms-and-conditions"
                         )
                       }
                     >
@@ -358,11 +366,14 @@ const Signup = () => {
                     </TouchableOpacity>
                     <Text style={styles.termsText}> and </Text>
                     <TouchableOpacity
+                      // onPress={() =>
+                      //   Alert.alert(
+                      //     "Privacy Policy",
+                      //     "Privacy Policy content will be displayed here."
+                      //   )
+                      // }
                       onPress={() =>
-                        Alert.alert(
-                          "Privacy Policy",
-                          "Privacy Policy content will be displayed here."
-                        )
+                        Linking.openURL("http://127.0.0.1:3000/privacy-policy")
                       }
                     >
                       <Text style={styles.termsLink}>Privacy Policy</Text>
