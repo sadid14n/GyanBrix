@@ -202,4 +202,48 @@ export default StyleSheet.create({
     color: "#999",
     marginTop: 4,
   },
+
+  // Terms and Conditions
+  termsContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 20,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  checkboxBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#D1D5DB",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxBoxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  termsTextContainer: {
+    flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
+  termsText: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+  },
+  termsLink: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+    textDecorationLine: "underline",
+    lineHeight: 20,
+  },
 });
