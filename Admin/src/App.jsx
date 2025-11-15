@@ -15,6 +15,7 @@ import PublicRoute from "./component/PublicRoute";
 import AdminManagement from "./pages/admin/AdminManagement";
 import BannerUpload from "./pages/admin/BannerUpload";
 import BannerList from "./pages/admin/BannerList";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const App = () => {
   return (
@@ -122,6 +123,8 @@ const App = () => {
         />
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
+
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       <Route path="/unauthorized" element={<Unauthorized />} />
     </Routes>

@@ -28,7 +28,7 @@ export default function ChapterContent() {
 
   const [chapter, setChapter] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [authorName, setAuthorName] = useState("Loading...");
+  // const [authorName, setAuthorName] = useState("Loading...");
 
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
@@ -41,12 +41,12 @@ export default function ChapterContent() {
         setChapter(data);
 
         // 2️⃣ Fetch author name using userId from chapter.createdBy
-        if (data?.createdBy) {
-          const name = await getUserName(data.createdBy);
-          setAuthorName(name);
-        } else {
-          setAuthorName("Unknown Author");
-        }
+        // if (data?.createdBy) {
+        //   const name = await getUserName(data.createdBy);
+        //   setAuthorName(name);
+        // } else {
+        //   setAuthorName("Unknown Author");
+        // }
       } catch (error) {
         console.error("Error fetching chapter content:", error);
       } finally {
@@ -125,7 +125,7 @@ export default function ChapterContent() {
 
         {/* Author & Date */}
         <View style={styles.metaContainer}>
-          <Text style={styles.metaText}>Author: {authorName}</Text>
+          {/* <Text style={styles.metaText}>Author: {authorName}</Text> */}
           <Text style={styles.metaText}>Updated: {formattedDate}</Text>
         </View>
 
@@ -137,14 +137,6 @@ export default function ChapterContent() {
             tagsStyles={htmlStyles}
           />
         </View>
-
-        {/* Feedback Button */}
-        {/* <TouchableOpacity
-        style={styles.feedbackButton}
-        onPress={() => setFeedbackModalVisible(true)}
-      >
-        <Text style={styles.feedbackButtonText}>Send Feedback</Text>
-      </TouchableOpacity> */}
 
         {/* Feedback Modal */}
         <Modal

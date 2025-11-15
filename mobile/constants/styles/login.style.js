@@ -1,119 +1,249 @@
-// styles/login.styles.js
-import { Dimensions, StyleSheet } from "react-native";
+// constants/styles/login.style.js
+import { StyleSheet } from "react-native";
 import COLORS from "../color";
 
-const { width } = Dimensions.get("window");
-
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: COLORS.background,
-    padding: 20,
-    justifyContent: "center",
-  },
-  scrollViewStyle: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: "#F5F7FA",
   },
   topIllustration: {
     alignItems: "center",
-    width: "100%",
+    justifyContent: "center",
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   illustrationImage: {
-    width: width * 0.75,
-    height: width * 0.75,
+    width: 280,
+    height: 200,
   },
   card: {
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    marginTop: -24,
+    shadowRadius: 12,
+    elevation: 8,
   },
   header: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: `${COLORS.primary}15`,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1A1A1A",
     marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
     textAlign: "center",
   },
+  subtitle: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
   formContainer: {
-    marginBottom: 16,
+    flex: 1,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
-    color: COLORS.textPrimary,
-    fontWeight: "500",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.inputBackground,
+    backgroundColor: "#F9FAFB",
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 16,
+    height: 56,
   },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    height: 48,
-    color: COLORS.textDark,
-  },
-  eyeIcon: {
-    padding: 8,
-  },
-  button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-    shadowColor: COLORS.black,
+  inputContainerFocused: {
+    borderColor: COLORS.primary,
+    backgroundColor: "#FFFFFF",
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  buttonText: {
-    color: COLORS.white,
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: "600",
+    color: "#1A1A1A",
+    paddingVertical: 0,
+  },
+  helperText: {
+    fontSize: 13,
+    color: "#999",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+    gap: 8,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "700",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
     marginTop: 24,
   },
   footerText: {
-    color: COLORS.textSecondary,
-    marginRight: 5,
+    fontSize: 15,
+    color: "#666",
   },
   link: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  // Resend OTP styles
+  resendContainer: {
+    alignItems: "center",
+    marginVertical: 16,
+    minHeight: 24,
+  },
+  timerText: {
+    fontSize: 14,
+    color: "#999",
+    fontWeight: "500",
+  },
+  resendText: {
+    fontSize: 15,
+    color: COLORS.primary,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
+
+  // Change number button
+  changeNumberButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  changeNumberText: {
+    fontSize: 15,
     color: COLORS.primary,
     fontWeight: "600",
   },
-});
 
-export default styles;
+  // Overlay Loading Modal
+  overlayContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  overlayContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 32,
+    alignItems: "center",
+    minWidth: 200,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  overlayText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    marginTop: 16,
+  },
+  overlaySubtext: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 4,
+  },
+
+  // Terms and Conditions
+  termsContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 20,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  checkboxBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#D1D5DB",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxBoxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  termsTextContainer: {
+    flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
+  termsText: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+  },
+  termsLink: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+    textDecorationLine: "underline",
+    lineHeight: 20,
+  },
+});
