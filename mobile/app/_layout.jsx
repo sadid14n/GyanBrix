@@ -37,7 +37,6 @@ function MainLayout() {
         setCheckingProfile(false);
       },
       (error) => {
-        console.error("Error checking Firestore user:", error);
         setCheckingProfile(false);
       }
     );

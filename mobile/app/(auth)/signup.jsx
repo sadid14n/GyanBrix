@@ -260,8 +260,6 @@ const Signup = () => {
                       onChangeText={setEmail}
                       autoCapitalize="none"
                       keyboardType="email-address"
-                      // onFocus={() => setFocusedField("email")}
-                      // onBlur={() => setFocusedField(null)}
                     />
                     {isValidEmail(email) && (
                       <Ionicons
@@ -350,12 +348,6 @@ const Signup = () => {
                   <View style={styles.termsTextContainer}>
                     <Text style={styles.termsText}>I agree to the </Text>
                     <TouchableOpacity
-                      // onPress={() =>
-                      //   Alert.alert(
-                      //     "Terms & Conditions",
-                      //     "Terms and Conditions content will be displayed here."
-                      //   )
-                      // }
                       onPress={() =>
                         Linking.openURL(
                           "http://127.0.0.1:3000/terms-and-conditions"
@@ -366,12 +358,6 @@ const Signup = () => {
                     </TouchableOpacity>
                     <Text style={styles.termsText}> and </Text>
                     <TouchableOpacity
-                      // onPress={() =>
-                      //   Alert.alert(
-                      //     "Privacy Policy",
-                      //     "Privacy Policy content will be displayed here."
-                      //   )
-                      // }
                       onPress={() =>
                         Linking.openURL("http://127.0.0.1:3000/privacy-policy")
                       }

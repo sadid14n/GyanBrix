@@ -89,6 +89,10 @@ export default StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  inputContainerError: {
+    borderColor: "#EF4444",
+    backgroundColor: "#FEF2F2",
+  },
   inputIcon: {
     marginRight: 12,
   },
@@ -245,5 +249,12 @@ export default StyleSheet.create({
     color: COLORS.primary,
     textDecorationLine: "underline",
     lineHeight: 20,
+  },
+  warningText: {
+    fontSize: 13,
+    color: "#EF4444",
+    textAlign: "center",
+    marginTop: 8,
+    fontWeight: "500",
   },
 });

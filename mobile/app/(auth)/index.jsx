@@ -32,6 +32,7 @@ const Login = () => {
   const [overlayLoading, setOverlayLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   // Timer for resend OTP
   useEffect(() => {
@@ -50,33 +51,108 @@ const Login = () => {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
-  // 🔹 Function to send OTP
-  // const sendOtp = async () => {
-  //   if (!phone) {
-  //     Alert.alert("Error", "Please enter a valid phone number.");
-  //     return;
-  //   }
+  // Smart phone number formatting and validation
+  const formatPhoneNumber = (input) => {
+    // Remove all non-digit characters except +
+    let cleaned = input.replace(/[^\d+]/g, "");
 
-  //   setLoading(true);
-  //   try {
-  //     const confirmation = await signInWithPhoneNumber(auth, phone);
-  //     setConfirm(confirmation);
-  //     Alert.alert("Success", "OTP sent successfully!");
-  //   } catch (error) {
-  //     console.error("Error sending OTP:", error);
-  //     Alert.alert("Error", error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    // If user types only digits (no +)
+    if (!cleaned.startsWith("+")) {
+      // Remove leading zeros
+      cleaned = cleaned.replace(/^0+/, "");
+
+      // Case 1: User enters 10 digits (e.g., 9876543210)
+      if (cleaned.length === 10 && /^\d{10}$/.test(cleaned)) {
+        return `+91${cleaned}`;
+      }
+
+      // Case 2: User enters 12 digits starting with 91 (e.g., 919876543210)
+      if (cleaned.length === 12 && cleaned.startsWith("91")) {
+        return `+${cleaned}`;
+      }
+
+      // Case 3: User enters 11 digits starting with 91 (missing one digit)
+      if (cleaned.length === 11 && cleaned.startsWith("91")) {
+        return `+${cleaned}`;
+      }
+
+      // Case 4: Add + to beginning if user enters country code
+      if (cleaned.length > 10) {
+        return `+${cleaned}`;
+      }
+
+      // Case 5: Less than 10 digits - just return with + for other countries
+      if (cleaned.length > 0 && cleaned.length < 10) {
+        return `+91${cleaned}`;
+      }
+    }
+
+    return cleaned;
+  };
+
+  // Validate phone number
+  const validatePhoneNumber = (phoneNumber) => {
+    // Remove spaces and special characters for validation
+    const cleaned = phoneNumber.replace(/[\s\-()]/g, "");
+
+    // Check if it's a valid format
+    // Indian number: +91 followed by 10 digits
+    const indianPattern = /^\+91[6-9]\d{9}$/;
+
+    // International format: + followed by country code and number
+    const internationalPattern = /^\+\d{10,15}$/;
+
+    if (indianPattern.test(cleaned)) {
+      return { valid: true, formatted: cleaned };
+    }
+
+    if (internationalPattern.test(cleaned)) {
+      return { valid: true, formatted: cleaned };
+    }
+
+    // Check common errors
+    if (!cleaned.startsWith("+")) {
+      return {
+        valid: false,
+        error: "Phone number must include country code (e.g., +91)",
+      };
+    }
+
+    if (cleaned.length < 12) {
+      return {
+        valid: false,
+        error: "Phone number is too short. Indian numbers need 10 digits.",
+      };
+    }
+
+    if (cleaned.length > 15) {
+      return {
+        valid: false,
+        error: "Phone number is too long.",
+      };
+    }
+
+    return {
+      valid: false,
+      error: "Invalid phone number format.",
+    };
+  };
+
+  // Handle phone input change
+  const handlePhoneChange = (text) => {
+    setPhoneError("");
+    const formatted = formatPhoneNumber(text);
+    setPhone(formatted);
+  };
 
   // Function to send OTP
   const sendOtp = async () => {
-    if (!phone || phone.length < 10) {
-      Alert.alert(
-        "Error",
-        "Please enter a valid phone number with country code."
-      );
+    // Validate phone number
+    const validation = validatePhoneNumber(phone);
+
+    if (!validation.valid) {
+      setPhoneError(validation.error);
+      Alert.alert("Invalid Phone Number", validation.error);
       return;
     }
 
@@ -84,9 +160,12 @@ const Login = () => {
     setOverlayLoading(true);
 
     try {
-      const confirmation = await signInWithPhoneNumber(auth, phone);
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        validation.formatted
+      );
       setConfirm(confirmation);
-      setResendTimer(30); // 30 seconds countdown
+      setResendTimer(30);
       setCanResend(false);
 
       setOverlayLoading(false);
@@ -97,9 +176,12 @@ const Login = () => {
 
       let errorMessage = "Failed to send OTP. Please try again.";
       if (error.code === "auth/invalid-phone-number") {
-        errorMessage = "Invalid phone number format. Use +91XXXXXXXXXX";
+        errorMessage =
+          "Invalid phone number format. Please check and try again.";
       } else if (error.code === "auth/too-many-requests") {
         errorMessage = "Too many requests. Please try again later.";
+      } else if (error.code === "auth/quota-exceeded") {
+        errorMessage = "Daily SMS quota exceeded. Please try again tomorrow.";
       }
 
       Alert.alert("Error", errorMessage);
@@ -127,29 +209,7 @@ const Login = () => {
     }
   };
 
-  // 🔹 Function to confirm OTP
-  // const confirmCode = async () => {
-  //   if (!code) {
-  //     Alert.alert("Error", "Please enter the OTP code.");
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   try {
-  //     await confirm.confirm(code); // confirms the OTP
-  //     Alert.alert("Success", "Phone number verified successfully!");
-  //     // ✅ Navigate to signup or home after verification
-  //     router.replace("/(auth)/signup");
-  //   } catch (error) {
-  //     console.error("Error confirming code:", error);
-  //     Alert.alert("Error", "Invalid OTP. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Function to confirm OTP and check profile
-  // Function to confirm OTP - Always redirect to signup
+  // Function to confirm OTP
   const confirmCode = async () => {
     if (!code || code.length !== 6) {
       Alert.alert("Error", "Please enter the 6-digit OTP code.");
@@ -160,7 +220,6 @@ const Login = () => {
     setOverlayLoading(true);
 
     try {
-      // Confirm OTP
       await confirm.confirm(code);
 
       setOverlayLoading(false);
@@ -183,103 +242,15 @@ const Login = () => {
     }
   };
 
-  // return (
-  //   <KeyboardAvoidingView
-  //     style={{ flex: 1 }}
-  //     behavior={Platform.OS === "ios" ? "padding" : "height"}
-  //   >
-  //     <View style={styles.container}>
-  //       <View style={styles.topIllustration}>
-  //         <Image
-  //           source={require("../../assets/images/login.png")}
-  //           style={styles.illustrationImage}
-  //           resizeMode="contain"
-  //         />
-  //       </View>
-
-  //       <View style={styles.card}>
-  //         <View style={styles.formContainer}>
-  //           {!confirm ? (
-  //             <>
-  //               <View style={styles.inputGroup}>
-  //                 <Text style={styles.label}>Phone</Text>
-  //                 <View style={styles.inputContainer}>
-  //                   <Ionicons
-  //                     name="call-outline"
-  //                     size={20}
-  //                     color={COLORS.primary}
-  //                     style={styles.inputIcon}
-  //                   />
-  //                   <TextInput
-  //                     style={styles.input}
-  //                     placeholder="+91 12345 54321"
-  //                     placeholderTextColor={COLORS.placeholderText}
-  //                     value={phone}
-  //                     onChangeText={setPhone}
-  //                     keyboardType="phone-pad"
-  //                     autoCapitalize="none"
-  //                   />
-  //                 </View>
-  //               </View>
-
-  //               <TouchableOpacity
-  //                 style={[styles.button, loading && { opacity: 0.7 }]}
-  //                 onPress={sendOtp}
-  //                 disabled={loading}
-  //               >
-  //                 <Text style={styles.buttonText}>
-  //                   {loading ? "Sending OTP..." : "Send OTP"}
-  //                 </Text>
-  //               </TouchableOpacity>
-  //             </>
-  //           ) : (
-  //             <>
-  //               <View style={styles.inputGroup}>
-  //                 <Text style={styles.label}>Enter OTP</Text>
-  //                 <View style={styles.inputContainer}>
-  //                   <Ionicons
-  //                     name="call-outline"
-  //                     size={20}
-  //                     color={COLORS.primary}
-  //                     style={styles.inputIcon}
-  //                   />
-  //                   <TextInput
-  //                     style={styles.input}
-  //                     placeholder="6 digit code"
-  //                     placeholderTextColor={COLORS.placeholderText}
-  //                     value={code}
-  //                     onChangeText={setCode}
-  //                     keyboardType="phone-pad"
-  //                     autoCapitalize="none"
-  //                   />
-  //                 </View>
-  //               </View>
-
-  //               <TouchableOpacity
-  //                 style={[styles.button, loading && { opacity: 0.7 }]}
-  //                 onPress={confirmCode}
-  //                 disabled={loading}
-  //               >
-  //                 <Text style={styles.buttonText}>
-  //                   {loading ? "Logging in..." : "Login"}
-  //                 </Text>
-  //               </TouchableOpacity>
-  //             </>
-  //           )}
-
-  //           <View style={styles.footer}>
-  //             <Text style={styles.footerText}>Do not have an account?</Text>
-  //             <Link href={"/signup"} asChild>
-  //               <TouchableOpacity>
-  //                 <Text style={styles.link}>Sign Up</Text>
-  //               </TouchableOpacity>
-  //             </Link>
-  //           </View>
-  //         </View>
-  //       </View>
-  //     </View>
-  //   </KeyboardAvoidingView>
-  // );
+  // Get phone number display (formatted for readability)
+  const getDisplayPhone = () => {
+    if (!phone) return "";
+    // Format: +91 98765 43210
+    if (phone.startsWith("+91") && phone.length === 13) {
+      return `${phone.slice(0, 3)} ${phone.slice(3, 8)} ${phone.slice(8)}`;
+    }
+    return phone;
+  };
 
   return (
     <>
@@ -312,7 +283,7 @@ const Login = () => {
                   <Text style={styles.subtitle}>
                     {!confirm
                       ? "Enter your phone number to continue"
-                      : `Enter the 6-digit code sent to ${phone}`}
+                      : `Enter the 6-digit code sent to ${getDisplayPhone()}`}
                   </Text>
                 </View>
 
@@ -321,33 +292,53 @@ const Login = () => {
                   <>
                     <View style={styles.inputGroup}>
                       <Text style={styles.label}>Phone Number</Text>
-                      <View style={styles.inputContainer}>
+                      <View
+                        style={[
+                          styles.inputContainer,
+                          phoneError && styles.inputContainerError,
+                        ]}
+                      >
                         <Ionicons
                           name="call-outline"
                           size={20}
-                          color={COLORS.primary}
+                          color={phoneError ? "#EF4444" : COLORS.primary}
                           style={styles.inputIcon}
                         />
                         <TextInput
                           style={styles.input}
-                          placeholder="+91 98765 43210"
+                          placeholder="9876543210 or +919876543210"
                           placeholderTextColor={COLORS.placeholderText}
                           value={phone}
-                          onChangeText={setPhone}
+                          onChangeText={handlePhoneChange}
                           keyboardType="phone-pad"
                           autoCapitalize="none"
                           maxLength={15}
                         />
+                        {phone.length === 13 && !phoneError && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color="#10B981"
+                            style={{ marginLeft: 8 }}
+                          />
+                        )}
                       </View>
-                      <Text style={styles.helperText}>
-                        Include country code (e.g., +91 for India)
-                      </Text>
+                      {phoneError ? (
+                        <Text style={styles.errorText}>{phoneError}</Text>
+                      ) : (
+                        <Text style={styles.helperText}>
+                          Enter 10 digits or include +91 for India
+                        </Text>
+                      )}
                     </View>
 
                     <TouchableOpacity
-                      style={[styles.button, loading && { opacity: 0.7 }]}
+                      style={[
+                        styles.button,
+                        (loading || phone.length < 10) && { opacity: 0.7 },
+                      ]}
                       onPress={sendOtp}
-                      disabled={loading}
+                      disabled={loading || phone.length < 10}
                     >
                       <Text style={styles.buttonText}>
                         {loading ? "Sending OTP..." : "Send OTP"}
