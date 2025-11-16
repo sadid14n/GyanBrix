@@ -17,6 +17,7 @@ import BannerUpload from "./pages/admin/BannerUpload";
 import BannerList from "./pages/admin/BannerList";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import ContactUs from "./pages/ContactUs";
 
 const App = () => {
   return (
@@ -127,6 +128,7 @@ const App = () => {
 
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+      <Route path="/contact-us" element={<ContactUs />} />
 
       <Route path="/unauthorized" element={<Unauthorized />} />
     </Routes>
