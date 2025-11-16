@@ -350,7 +350,7 @@ const Signup = () => {
                     <TouchableOpacity
                       onPress={() =>
                         Linking.openURL(
-                          "http://127.0.0.1:3000/terms-and-conditions"
+                          "https://gyanbrix.vercel.app/terms-and-conditions"
                         )
                       }
                     >
@@ -359,7 +359,9 @@ const Signup = () => {
                     <Text style={styles.termsText}> and </Text>
                     <TouchableOpacity
                       onPress={() =>
-                        Linking.openURL("http://127.0.0.1:3000/privacy-policy")
+                        Linking.openURL(
+                          "https://gyanbrix.vercel.app/privacy-policy"
+                        )
                       }
                     >
                       <Text style={styles.termsLink}>Privacy Policy</Text>
