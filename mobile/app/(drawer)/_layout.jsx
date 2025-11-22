@@ -14,8 +14,9 @@ import COLORS from "./../../constants/color";
 
 // 🔗 Your app share text and link
 const APP_SHARE_TEXT =
-  "📘 Hey! Check out GyanBrix — an amazing learning app that helps you grow smarter every day! 🚀 Download now:";
-const APP_URL = "https://play.google.com/store/apps/details?id=com.gyanbrix";
+  "📘 বন্ধুসকল! GyanBrix এপ্ টো চাওকচোন — দশম শ্ৰেণীৰ অসমীয়া মাধ্যমৰ সকলো বিষয়ৰ সমাধান পাবলৈ এইটো শ্ৰেষ্ঠ এপ্! 🚀 আজিয়েই ডাউনল'ড কৰক:";
+const APP_URL =
+  "https://play.google.com/store/apps/details?id=com.gyanbrix.app";
 
 // const SOCIAL_LINKS = {
 //   whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(
