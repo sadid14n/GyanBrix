@@ -13,10 +13,6 @@ export default function AdminManagement() {
       // Force refresh to get new role
       await firebaseAuth.currentUser.getIdToken(true);
       await firebaseAuth.currentUser.reload();
-      console.log(
-        "Updated user claims:",
-        await firebaseAuth.currentUser.getIdTokenResult()
-      );
     } catch (err) {
       alert("Error: " + err.message);
     }

@@ -42,6 +42,11 @@ export const setAdminRole = onCall(
       const user = await admin.auth().getUserByPhoneNumber(phoneNumber);
       await admin.auth().setCustomUserClaims(user.uid, { role: "admin" });
 
+      // 🔥 Update Firestore `users` role field
+      await admin.firestore().collection("users").doc(user.uid).update({
+        role: "admin",
+      });
+
       logger.info(`✅ Admin role assigned to: ${phoneNumber}`);
       return { message: `${phoneNumber} is now an admin.` };
     } catch (error) {
@@ -71,6 +76,11 @@ export const removeAdminRole = onCall(
     try {
       const user = await admin.auth().getUserByPhoneNumber(phoneNumber);
       await admin.auth().setCustomUserClaims(user.uid, { role: "user" });
+
+      // 🔥 Update Firestore `users` role field
+      await admin.firestore().collection("users").doc(user.uid).update({
+        role: "user",
+      });
 
       logger.info(`✅ Admin role removed from: ${phoneNumber}`);
       return { message: `${phoneNumber} is now a normal user.` };
