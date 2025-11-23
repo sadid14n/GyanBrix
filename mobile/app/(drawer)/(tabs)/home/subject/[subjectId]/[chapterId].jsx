@@ -13,6 +13,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import Pdf from "react-native-pdf";
 import RenderHtml from "react-native-render-html";
 import {
   getChapter,
@@ -130,12 +131,39 @@ export default function ChapterContent() {
         </View>
 
         {/* HTML Content */}
-        <View style={styles.contentContainer}>
+        {/* <View style={styles.contentContainer}>
           <RenderHtml
             contentWidth={width - 40}
             source={{ html: chapter.content || "<p>No content available.</p>" }}
             tagsStyles={htmlStyles}
           />
+        </View> */}
+
+        <View style={styles.contentContainer}>
+          {chapter.chapterType === "pdf" && chapter.pdfUrl ? (
+            <>
+              <Text
+                style={{ fontWeight: "bold", marginBottom: 10, fontSize: 16 }}
+              >
+                📄 PDF Attached — Click to View
+              </Text>
+
+              {/* PDF Viewer */}
+              <Pdf
+                trustAllCerts={false}
+                source={{ uri: chapter.pdfUrl }}
+                style={{ width: "100%", height: 600 }}
+              />
+            </>
+          ) : (
+            <RenderHtml
+              contentWidth={width - 40}
+              source={{
+                html: chapter.content || "<p>No content available.</p>",
+              }}
+              tagsStyles={htmlStyles}
+            />
+          )}
         </View>
 
         {/* Feedback Modal */}

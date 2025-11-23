@@ -23,6 +23,8 @@ const Chapters = () => {
     title: "",
     content: "",
     subjectId: "",
+    chapterType: "text", // default: text editor
+    pdfUrl: "", // will store PDF download URL if chapterType = pdf
   });
 
   const { user } = useAuth();
@@ -69,13 +71,48 @@ const Chapters = () => {
         title: chapter.title || "",
         content: chapter.content || "",
         subjectId: chapter.subjectId || "",
+        chapterType: chapter.chapterType || "text",
+        pdfUrl: chapter.pdfUrl || "",
       });
     } else {
-      setFormData({ title: "", content: "", subjectId: "" });
+      setFormData({
+        title: "",
+        content: "",
+        subjectId: "",
+        chapterType: "text",
+        pdfUrl: "",
+      });
     }
 
     setIsModalOpen(true);
   };
+
+  // const handleModalSubmit = async (formData) => {
+  //   const subject = subjects.find((s) => s.id === formData.subjectId);
+  //   if (!subject) return;
+
+  //   if (editingChapter) {
+  //     await updateChapter(
+  //       subject.classId,
+  //       subject.id,
+  //       editingChapter.id,
+  //       formData.title,
+  //       formData.content
+  //     );
+  //   } else {
+  //     await addChapter(
+  //       subject.classId,
+  //       subject.id,
+  //       formData.title,
+  //       formData.content,
+  //       user
+  //     );
+  //   }
+
+  //   setIsModalOpen(false);
+  //   setEditingChapter(null);
+  //   await fetchData();
+  // };
 
   const handleModalSubmit = async (formData) => {
     const subject = subjects.find((s) => s.id === formData.subjectId);
@@ -86,17 +123,10 @@ const Chapters = () => {
         subject.classId,
         subject.id,
         editingChapter.id,
-        formData.title,
-        formData.content
+        formData
       );
     } else {
-      await addChapter(
-        subject.classId,
-        subject.id,
-        formData.title,
-        formData.content,
-        user
-      );
+      await addChapter(subject.classId, subject.id, formData, user);
     }
 
     setIsModalOpen(false);
