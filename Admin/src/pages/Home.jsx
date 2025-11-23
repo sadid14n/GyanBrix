@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { user, profile, logout } = useAuth();
@@ -47,6 +47,15 @@ const Home = () => {
         >
           Logout
         </button>
+      </div>
+
+      <div className="mt-6 ">
+        <Link
+          to="/admin"
+          className="px-5 py-2 rounded-lg text-2xl bg-accent cursor-pointer"
+        >
+          Go To Dashboard
+        </Link>
       </div>
     </div>
   );
