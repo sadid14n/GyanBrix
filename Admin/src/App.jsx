@@ -18,6 +18,9 @@ import BannerList from "./pages/admin/BannerList";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import ContactUs from "./pages/ContactUs";
+import QuizManagement from "./pages/admin/Quiz/QuizManagement";
+import AddQuestions from "./pages/admin/Quiz/AddQuestions";
+import ManageQuestions from "./pages/admin/Quiz/ManageQuestions";
 
 const App = () => {
   return (
@@ -108,6 +111,30 @@ const App = () => {
           }
         />
         <Route
+          path="quiz/quiz-management"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuizManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/add-questions"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AddQuestions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/manage-questions"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManageQuestions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="banner-upload"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
@@ -123,6 +150,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
 

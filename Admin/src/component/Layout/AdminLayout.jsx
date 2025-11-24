@@ -27,6 +27,11 @@ const AdminLayout = () => {
       href: "/admin/admin-management",
       icon: FileText,
     },
+    {
+      name: "Quiz Management",
+      href: "/admin/quiz/quiz-management",
+      icon: FileText,
+    },
     { name: "Banner Upload", href: "/admin/banner-upload", icon: FileText },
     { name: "Banner List", href: "/admin/banner-list", icon: FileText },
   ];
