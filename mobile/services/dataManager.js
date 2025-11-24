@@ -7,6 +7,8 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  orderBy,
+  query,
   serverTimestamp,
 } from "@react-native-firebase/firestore";
 import { firebaseApp, firestoreDB } from "./firebaseConfig";
@@ -48,9 +50,33 @@ export const getAllSubjects = async (classId) => {
 
 /* -------------------------- 📖 CHAPTER FUNCTIONS -------------------------- */
 
+// export const getAllChapters = async (classId, subjectId) => {
+//   try {
+//     const q = collection(
+//       db,
+//       "classes",
+//       classId,
+//       "subjects",
+//       subjectId,
+//       "chapters"
+//     );
+//     const snapshot = await getDocs(q);
+//     return snapshot.docs.map((docSnap) => ({
+//       id: docSnap.id,
+//       ...docSnap.data(),
+//     }));
+//   } catch (error) {
+//     console.error(
+//       `Error fetching chapters for class ${classId} and subject ${subjectId}:`,
+//       error
+//     );
+//     throw error;
+//   }
+// };
+
 export const getAllChapters = async (classId, subjectId) => {
   try {
-    const q = collection(
+    const chapterRef = collection(
       db,
       "classes",
       classId,
@@ -58,7 +84,11 @@ export const getAllChapters = async (classId, subjectId) => {
       subjectId,
       "chapters"
     );
+
+    // Order by createdAt (ascending → oldest first)
+    const q = query(chapterRef, orderBy("createdAt", "asc"));
     const snapshot = await getDocs(q);
+
     return snapshot.docs.map((docSnap) => ({
       id: docSnap.id,
       ...docSnap.data(),
