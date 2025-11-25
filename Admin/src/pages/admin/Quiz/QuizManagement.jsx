@@ -45,7 +45,7 @@ const QuizManagement = () => {
 
         {/* Create Chapter-Level Quiz */}
         <Link
-          to="/admin/quiz/create-chapter"
+          to="/admin/quiz/quiz-management/create-chapter-quiz"
           className="admin-card group cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
@@ -63,7 +63,7 @@ const QuizManagement = () => {
 
         {/* Create Subject-Level Quiz */}
         <Link
-          to="/admin/quiz/create-subject"
+          to="/admin/quiz/quiz-management/create-subject-quiz"
           className="admin-card group cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
@@ -81,7 +81,7 @@ const QuizManagement = () => {
 
         {/* Create Class-Level Quiz */}
         <Link
-          to="/admin/quiz/create-class"
+          to="/admin/quiz/quiz-management/create-class-quiz"
           className="admin-card group cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">

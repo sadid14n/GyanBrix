@@ -8,6 +8,8 @@ import {
   getDocs,
   serverTimestamp,
   writeBatch,
+  arrayUnion,
+  addDoc,
 } from "firebase/firestore";
 
 /**
@@ -118,4 +120,181 @@ export const deleteQuestion = async (
     questionId
   );
   await deleteDoc(ref);
+};
+
+// chapter level quiz creation
+export const createChapterQuiz = async ({
+  classId,
+  subjectId,
+  chapterId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  user,
+}) => {
+  const quizzesRef = collection(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "chapters",
+    chapterId,
+    "quizzes"
+  );
+
+  // Create quiz document
+  const quizDoc = await addDoc(quizzesRef, {
+    title,
+    description: description || "",
+    type: "chapter",
+    classId,
+    subjectId,
+    chapterId,
+    durationMinutes,
+    totalQuestions: questions.length,
+    questions, // array of {questionId, classId, subjectId, chapterId}
+    createdBy: user?.uid || "admin",
+    createdAt: serverTimestamp(),
+    status: "published", // can use later: draft/published
+  });
+
+  // 🔄 Update usage field in all selected questions
+  for (const q of questions) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId: quizDoc.id,
+        quizTitle: title,
+        quizType: "chapter",
+        levelLabel: title,
+        createdAt: new Date(),
+      }),
+    });
+  }
+
+  return quizDoc.id;
+};
+
+// 📌 Create Subject-Level Quiz
+export const createSubjectQuiz = async ({
+  classId,
+  subjectId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  user,
+}) => {
+  const quizzesRef = collection(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "quizzes"
+  );
+
+  const quizDoc = await addDoc(quizzesRef, {
+    title,
+    description: description || "",
+    type: "subject",
+    classId,
+    subjectId,
+    durationMinutes,
+    totalQuestions: questions.length,
+    questions,
+    createdBy: user?.uid || "admin",
+    createdAt: serverTimestamp(),
+    status: "published",
+  });
+
+  // 🔄 Update usage in each question
+  for (const q of questions) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId: quizDoc.id,
+        quizTitle: title,
+        quizType: "subject",
+        levelLabel: title,
+        createdAt: new Date(), // ⚠ never use serverTimestamp() inside arrayUnion
+      }),
+    });
+  }
+
+  return quizDoc.id;
+};
+
+export const createClassQuiz = async ({
+  classId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  user,
+}) => {
+  const quizzesRef = collection(firestoreDB, "classes", classId, "quizzes");
+
+  // Create quiz document
+  const quizDoc = await addDoc(quizzesRef, {
+    title,
+    description: description || "",
+    type: "class",
+    classId,
+    durationMinutes,
+    totalQuestions: questions.length,
+    questions,
+    createdBy: user?.uid || "admin",
+    createdAt: serverTimestamp(),
+    status: "published",
+  });
+
+  // 🔄 Update question usage tracking
+  for (const q of questions) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId: quizDoc.id,
+        quizTitle: title,
+        quizType: "class",
+        levelLabel: title,
+        createdAt: new Date(),
+      }),
+    });
+  }
+
+  return quizDoc.id;
 };
