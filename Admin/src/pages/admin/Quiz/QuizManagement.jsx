@@ -115,6 +115,24 @@ const QuizManagement = () => {
           </p>
         </Link>
 
+        {/* Manage Quizzes */}
+        <Link
+          to="/admin/quiz/quiz-management/manage-quizzes"
+          className="admin-card group cursor-pointer hover:shadow-lg transition-shadow"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="h-12 w-12 bg-info/10 rounded-lg flex items-center justify-center">
+              <ClipboardList className="h-6 w-6 text-info" />
+            </div>
+          </div>
+          <h3 className="text-lg font-heading font-semibold text-text-heading mb-2 group-hover:text-info transition-colors">
+            Manage Quizzes
+          </h3>
+          <p className="text-sm text-text-subtle">
+            View, edit, or delete existing quizzes.
+          </p>
+        </Link>
+
         {/* Future: Analytics */}
         <div className="admin-card opacity-70">
           <div className="flex items-center justify-between mb-4">

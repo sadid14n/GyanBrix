@@ -5,14 +5,24 @@ import { getAllClasses } from "../../../services/classManager";
 import { getAllSubjects } from "../../../services/subjectManager";
 import { getAllChapters } from "../../../services/chapterManager";
 import { useAuth } from "../../../context/AuthContext";
+
 import {
   createChapterQuiz,
   getQuestionsByChapter,
+  updateChapterQuiz,
 } from "../../../services/quizManager";
+
+import { useEditQuiz } from "../../../context/EditQuizContext";
+import { useNavigate } from "react-router-dom";
 
 const CreateChapterQuiz = () => {
   const { user } = useAuth();
+  const { quizEditingMode, clearEditing } = useEditQuiz();
+  const navigate = useNavigate();
 
+  /** -------------------------------------------
+   *  DROPDOWNS
+   -------------------------------------------- */
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
@@ -21,45 +31,130 @@ const CreateChapterQuiz = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [selectedChapterId, setSelectedChapterId] = useState("");
 
+  /** -------------------------------------------
+   * QUESTIONS
+   -------------------------------------------- */
   const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
+  /** -------------------------------------------
+   * QUIZ DETAILS
+   -------------------------------------------- */
   const [quizTitle, setQuizTitle] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(20);
   const [description, setDescription] = useState("");
 
+  /** -------------------------------------------
+   * EDIT MODE HANDLING
+   -------------------------------------------- */
+  const [pendingQuizEdit, setPendingQuizEdit] = useState(null);
+
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load class list
+  /** -------------------------------------------
+   * STEP 1 — Store edit mode state
+   -------------------------------------------- */
+  useEffect(() => {
+    if (quizEditingMode?.mode === "chapter") {
+      setPendingQuizEdit(quizEditingMode.quizData);
+    }
+  }, [quizEditingMode]);
+
+  /** -------------------------------------------
+   * STEP 2 — Load classes
+   -------------------------------------------- */
   useEffect(() => {
     getAllClasses().then(setClasses);
   }, []);
 
-  // Load subjects when class selected
+  /** -------------------------------------------
+   * STEP 3 — Apply CLASS for edit (only after classes loaded)
+   -------------------------------------------- */
   useEffect(() => {
-    if (!selectedClassId) return setSubjects([]), setSelectedSubjectId("");
+    if (!pendingQuizEdit || classes.length === 0) return;
+    setSelectedClassId(pendingQuizEdit.classId);
+  }, [pendingQuizEdit, classes]);
+
+  /** -------------------------------------------
+   * STEP 4 — Load subjects when class changes
+   -------------------------------------------- */
+  useEffect(() => {
+    if (!selectedClassId) {
+      setSubjects([]);
+      setSelectedSubjectId("");
+      return;
+    }
+
     getAllSubjects(selectedClassId).then(setSubjects);
   }, [selectedClassId]);
 
-  // Load chapters when subject selected
+  /** -------------------------------------------
+   * STEP 5 — Apply SUBJECT for edit (after subjects loaded)
+   -------------------------------------------- */
   useEffect(() => {
-    if (!selectedSubjectId) return setChapters([]), setSelectedChapterId("");
+    if (!pendingQuizEdit || subjects.length === 0) return;
+    setSelectedSubjectId(pendingQuizEdit.subjectId);
+  }, [pendingQuizEdit, subjects]);
+
+  /** -------------------------------------------
+   * STEP 6 — Load chapters when subject changes
+   -------------------------------------------- */
+  useEffect(() => {
+    if (!selectedSubjectId) {
+      setChapters([]);
+      setSelectedChapterId("");
+      return;
+    }
+
     getAllChapters(selectedClassId, selectedSubjectId).then(setChapters);
   }, [selectedSubjectId]);
 
-  // Load questions when chapter selected
+  /** -------------------------------------------
+   * STEP 7 — Apply CHAPTER + QUIZ DETAILS + QUESTIONS (after chapters loaded)
+   -------------------------------------------- */
   useEffect(() => {
-    if (!selectedChapterId) return setQuestions([]);
+    if (!pendingQuizEdit) return;
+    if (chapters.length === 0) return;
+
+    setSelectedChapterId(pendingQuizEdit.chapterId);
+    setQuizTitle(pendingQuizEdit.title);
+    setDurationMinutes(pendingQuizEdit.durationMinutes);
+    setDescription(pendingQuizEdit.description || "");
+
+    // Ensure each question has full structure
+    setSelectedQuestions(
+      pendingQuizEdit.questions.map((item) => ({
+        questionId: item.questionId,
+        classId: item.classId,
+        subjectId: item.subjectId,
+        chapterId: item.chapterId,
+      }))
+    );
+  }, [pendingQuizEdit, chapters]);
+
+  /** -------------------------------------------
+   * STEP 8 — Load questions of chapter
+   -------------------------------------------- */
+  useEffect(() => {
+    if (!selectedChapterId) {
+      setQuestions([]);
+      return;
+    }
 
     setLoadingQuestions(true);
+
     getQuestionsByChapter(selectedClassId, selectedSubjectId, selectedChapterId)
-      .then((qs) => setQuestions(qs))
+      .then(setQuestions)
       .finally(() => setLoadingQuestions(false));
   }, [selectedChapterId]);
 
+  /** -------------------------------------------
+   * SELECT QUESTION
+   -------------------------------------------- */
   const toggleSelection = (question) => {
     const exists = selectedQuestions.find((q) => q.questionId === question.id);
+
     if (exists) {
       setSelectedQuestions((prev) =>
         prev.filter((q) => q.questionId !== question.id)
@@ -77,13 +172,38 @@ const CreateChapterQuiz = () => {
     }
   };
 
+  /** -------------------------------------------
+   * SUBMIT QUIZ (CREATE + UPDATE)
+   -------------------------------------------- */
   const handleSubmit = async () => {
     if (!quizTitle.trim()) return alert("Quiz title required");
     if (selectedQuestions.length === 0)
       return alert("Select at least 1 question");
 
     setSubmitting(true);
+
     try {
+      /** 🔥 EDIT MODE */
+      if (pendingQuizEdit) {
+        await updateChapterQuiz({
+          quizId: pendingQuizEdit.id,
+          classId: selectedClassId,
+          subjectId: selectedSubjectId,
+          chapterId: selectedChapterId,
+          title: quizTitle,
+          description,
+          durationMinutes,
+          questions: selectedQuestions,
+          previousQuestions: pendingQuizEdit.questions,
+        });
+
+        clearEditing();
+        alert("Quiz updated successfully!");
+        navigate("/admin/quiz/quiz-management/manage-quizzes");
+        return;
+      }
+
+      /** 🔥 CREATE MODE */
       await createChapterQuiz({
         classId: selectedClassId,
         subjectId: selectedSubjectId,
@@ -99,28 +219,34 @@ const CreateChapterQuiz = () => {
       setQuizTitle("");
       setDescription("");
       setSelectedQuestions([]);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create quiz");
+
+      navigate("/admin/quiz/quiz-management");
+    } catch (error) {
+      console.error("QUIZ SAVE ERROR → ", error);
+      alert("Failed to save quiz");
     } finally {
       setSubmitting(false);
     }
   };
 
+  /** -------------------------------------------
+   * RENDER UI
+   -------------------------------------------- */
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-heading font-bold text-text-heading">
-          Create Chapter Quiz
+          {pendingQuizEdit ? "Edit Chapter Quiz" : "Create Chapter Quiz"}
         </h1>
         <p className="text-text-subtle mt-1">
           Select questions from a chapter to build a quiz
         </p>
       </div>
 
-      {/* Step 1: Select class → subject → chapter */}
+      {/* Selectors */}
       <div className="admin-card grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Class */}
         <div>
           <label className="admin-label">Class</label>
           <select
@@ -136,6 +262,8 @@ const CreateChapterQuiz = () => {
             ))}
           </select>
         </div>
+
+        {/* Subject */}
         <div>
           <label className="admin-label">Subject</label>
           <select
@@ -152,6 +280,8 @@ const CreateChapterQuiz = () => {
             ))}
           </select>
         </div>
+
+        {/* Chapter */}
         <div>
           <label className="admin-label">Chapter</label>
           <select
@@ -170,7 +300,7 @@ const CreateChapterQuiz = () => {
         </div>
       </div>
 
-      {/* Step 2: Show questions */}
+      {/* Questions */}
       {selectedChapterId && (
         <div className="admin-card">
           <h2 className="text-lg font-heading font-semibold mb-3">
@@ -180,24 +310,23 @@ const CreateChapterQuiz = () => {
           {loadingQuestions ? (
             <p>Loading questions...</p>
           ) : questions.length === 0 ? (
-            <p className="text-text-subtle">
-              No questions found in this chapter.
-            </p>
+            <p className="text-text-subtle">No questions in this chapter.</p>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {questions.map((q, i) => {
                 const selected = selectedQuestions.some(
                   (s) => s.questionId === q.id
                 );
+
                 return (
                   <div
                     key={q.id}
+                    onClick={() => toggleSelection(q)}
                     className={`border p-4 rounded-lg cursor-pointer ${
                       selected
                         ? "bg-success/10 border-success"
                         : "bg-surface/60 border-border"
                     }`}
-                    onClick={() => toggleSelection(q)}
                   >
                     <div className="flex justify-between items-center">
                       <p className="font-medium">
@@ -207,21 +336,21 @@ const CreateChapterQuiz = () => {
                         <CheckCircle2 className="h-5 w-5 text-success" />
                       )}
                     </div>
+
+                    {q.usage?.length > 0 && (
+                      <p className="mt-1 text-xs text-text-subtle">
+                        Used in: {q.usage.map((u) => u.levelLabel).join(", ")}
+                      </p>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
-
-          {selectedQuestions.length > 0 && (
-            <p className="text-xs text-text-subtle mt-1">
-              Selected: {selectedQuestions.length} question(s)
-            </p>
-          )}
         </div>
       )}
 
-      {/* Step 3: Quiz details */}
+      {/* Quiz Details */}
       {selectedQuestions.length > 0 && (
         <div className="admin-card space-y-4">
           <h2 className="text-lg font-heading font-semibold">Quiz Details</h2>
@@ -229,11 +358,9 @@ const CreateChapterQuiz = () => {
           <div>
             <label className="admin-label">Quiz Title</label>
             <input
-              type="text"
               className="admin-input"
               value={quizTitle}
               onChange={(e) => setQuizTitle(e.target.value)}
-              placeholder="e.g., Chapter 3 Practice Test"
             />
           </div>
 
@@ -243,8 +370,7 @@ const CreateChapterQuiz = () => {
               className="admin-input min-h-[80px]"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Quiz description..."
-            />
+            ></textarea>
           </div>
 
           <div>
@@ -263,7 +389,11 @@ const CreateChapterQuiz = () => {
             onClick={handleSubmit}
             disabled={submitting}
           >
-            {submitting ? "Creating..." : "Create Quiz"}
+            {submitting
+              ? "Saving..."
+              : pendingQuizEdit
+              ? "Update Quiz"
+              : "Create Quiz"}
           </button>
         </div>
       )}

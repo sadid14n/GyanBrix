@@ -4,49 +4,83 @@ import { CheckCircle2 } from "lucide-react";
 import { getAllClasses } from "../../../services/classManager";
 import { getAllSubjects } from "../../../services/subjectManager";
 import { getAllChapters } from "../../../services/chapterManager";
+
 import { useAuth } from "../../../context/AuthContext";
 import {
   createClassQuiz,
+  updateClassQuiz,
   getQuestionsByChapter,
 } from "../../../services/quizManager";
 
+import { useEditQuiz } from "../../../context/EditQuizContext";
+import { useNavigate } from "react-router-dom";
+
 const CreateClassQuiz = () => {
   const { user } = useAuth();
+  const { quizEditingMode, clearEditing } = useEditQuiz();
+  const navigate = useNavigate();
 
+  // Dropdown data
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [questions, setQuestions] = useState([]);
-  const [chaptersLoaded, setChaptersLoaded] = useState(false);
 
+  // All questions from class
+  const [questions, setQuestions] = useState([]);
+
+  // Selected values
   const [selectedClassId, setSelectedClassId] = useState("");
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
+  // Quiz details
   const [quizTitle, setQuizTitle] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [description, setDescription] = useState("");
 
+  // Edit mode stored quiz
+  const [pendingQuizEdit, setPendingQuizEdit] = useState(null);
+
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load Classes
+  // ----------------------------
+  // 1️⃣ PRELOAD EDIT MODE DATA
+  // ----------------------------
+  useEffect(() => {
+    if (quizEditingMode && quizEditingMode.mode === "class") {
+      setPendingQuizEdit(quizEditingMode.quizData);
+    }
+  }, [quizEditingMode]);
+
+  // ----------------------------
+  // 2️⃣ LOAD CLASS LIST
+  // ----------------------------
   useEffect(() => {
     getAllClasses().then(setClasses);
   }, []);
 
-  // Load Subjects + All Questions from class
+  // Auto-select class (edit mode)
+  useEffect(() => {
+    if (!pendingQuizEdit || classes.length === 0) return;
+    setSelectedClassId(pendingQuizEdit.classId);
+  }, [pendingQuizEdit, classes]);
+
+  // ----------------------------
+  // 3️⃣ LOAD SUBJECTS + ALL QUESTIONS (ALL CHAPTERS)
+  // ----------------------------
   useEffect(() => {
     const loadAllQuestions = async () => {
-      if (!selectedClassId) return;
+      if (!selectedClassId) {
+        setSubjects([]);
+        setQuestions([]);
+        return;
+      }
 
       setLoadingQuestions(true);
-      setSubjects([]);
-      setQuestions([]);
-      setChaptersLoaded(false);
 
       const subs = await getAllSubjects(selectedClassId);
       setSubjects(subs);
 
-      let allQs = [];
+      let combinedQuestions = [];
 
       for (const sub of subs) {
         const chaps = await getAllChapters(selectedClassId, sub.id);
@@ -58,29 +92,54 @@ const CreateClassQuiz = () => {
             chap.id
           );
 
-          allQs.push(
+          combinedQuestions.push(
             ...qs.map((q) => ({
               ...q,
               classId: selectedClassId,
               subjectId: sub.id,
               chapterId: chap.id,
-              chapterTitle: chap.title,
               subjectName: sub.name,
+              chapterTitle: chap.title,
             }))
           );
         }
       }
 
-      setQuestions(allQs);
-      setChaptersLoaded(true);
+      setQuestions(combinedQuestions);
       setLoadingQuestions(false);
     };
 
     loadAllQuestions();
   }, [selectedClassId]);
 
+  // ----------------------------
+  // 4️⃣ AUTO-FILL SELECTED QUESTIONS + QUIZ DETAILS
+  // ----------------------------
+  useEffect(() => {
+    if (!pendingQuizEdit || questions.length === 0) return;
+
+    // Text inputs
+    setQuizTitle(pendingQuizEdit.title);
+    setDurationMinutes(pendingQuizEdit.durationMinutes);
+    setDescription(pendingQuizEdit.description || "");
+
+    // Select previously used questions
+    setSelectedQuestions(
+      pendingQuizEdit.questions.map((q) => ({
+        questionId: q.questionId,
+        classId: q.classId,
+        subjectId: q.subjectId,
+        chapterId: q.chapterId,
+      }))
+    );
+  }, [pendingQuizEdit, questions]);
+
+  // ----------------------------
+  // QUESTION SELECTOR
+  // ----------------------------
   const toggleSelection = (q) => {
     const exists = selectedQuestions.some((item) => item.questionId === q.id);
+
     if (exists) {
       setSelectedQuestions((prev) =>
         prev.filter((item) => item.questionId !== q.id)
@@ -98,13 +157,36 @@ const CreateClassQuiz = () => {
     }
   };
 
+  // ----------------------------
+  // SUBMIT — CREATE OR UPDATE
+  // ----------------------------
   const handleSubmit = async () => {
-    if (!quizTitle.trim()) return alert("Quiz title required!");
+    if (!quizTitle.trim()) return alert("Quiz title required");
     if (selectedQuestions.length === 0)
-      return alert("Select at least 1 question!");
+      return alert("Select at least 1 question");
 
     setSubmitting(true);
+
     try {
+      // ⭐ EDIT MODE
+      if (pendingQuizEdit) {
+        await updateClassQuiz({
+          quizId: pendingQuizEdit.id,
+          classId: selectedClassId,
+          title: quizTitle,
+          description,
+          durationMinutes,
+          questions: selectedQuestions,
+          previousQuestions: pendingQuizEdit.questions,
+        });
+
+        clearEditing();
+        alert("Class quiz updated successfully!");
+        navigate("/admin/quiz/quiz-management/manage-quizzes");
+        return;
+      }
+
+      // ⭐ CREATE MODE
       await createClassQuiz({
         classId: selectedClassId,
         title: quizTitle,
@@ -114,27 +196,32 @@ const CreateClassQuiz = () => {
         user,
       });
 
-      alert("Class-level quiz created successfully!");
+      alert("Class quiz created successfully!");
       setSelectedQuestions([]);
       setQuizTitle("");
       setDescription("");
+
+      navigate("/admin/quiz/quiz-management");
     } catch (err) {
       console.error(err);
-      alert("Error creating quiz");
+      alert("Failed to save quiz");
     } finally {
       setSubmitting(false);
     }
   };
 
+  // ----------------------------
+  // UI
+  // ----------------------------
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-heading font-bold text-text-heading">
-          Create Class Quiz
+          {pendingQuizEdit ? "Edit Class Quiz" : "Create Class Quiz"}
         </h1>
         <p className="text-text-subtle mt-1">
-          Select questions from all subjects and chapters of a class
+          Combine questions from all subjects & chapters of a class.
         </p>
       </div>
 
@@ -163,19 +250,16 @@ const CreateClassQuiz = () => {
           </h2>
 
           {loadingQuestions ? (
-            <p>Fetching subjects & questions...</p>
-          ) : !chaptersLoaded ? (
-            <p className="text-text-subtle">Loading chapters & questions...</p>
+            <p>Loading subjects, chapters & questions...</p>
           ) : questions.length === 0 ? (
-            <p className="text-text-subtle">
-              No questions available in this class
-            </p>
+            <p className="text-text-subtle">No questions found.</p>
           ) : (
             <div className="space-y-3 max-h-[450px] overflow-y-auto">
               {questions.map((q, idx) => {
                 const selected = selectedQuestions.some(
                   (s) => s.questionId === q.id
                 );
+
                 return (
                   <div
                     key={q.id}
@@ -190,12 +274,20 @@ const CreateClassQuiz = () => {
                       <p className="font-medium">
                         Q{idx + 1}. {q.question}
                       </p>
-                      {selected && <CheckCircle2 className="text-success" />}
+                      {selected && (
+                        <CheckCircle2 className="text-success h-5 w-5" />
+                      )}
                     </div>
 
                     <p className="text-xs text-text-subtle mt-1">
                       {q.subjectName} → {q.chapterTitle}
                     </p>
+
+                    {q.usage?.length > 0 && (
+                      <p className="mt-1 text-xs text-text-subtle">
+                        Used in: {q.usage.map((u) => u.levelLabel).join(", ")}
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -231,7 +323,7 @@ const CreateClassQuiz = () => {
               className="admin-input min-h-[70px]"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description of quiz"
+              placeholder="This quiz covers all subjects of the class."
             />
           </div>
 
@@ -251,7 +343,11 @@ const CreateClassQuiz = () => {
             onClick={handleSubmit}
             disabled={submitting}
           >
-            {submitting ? "Creating..." : "Create Quiz"}
+            {submitting
+              ? "Saving..."
+              : pendingQuizEdit
+              ? "Update Quiz"
+              : "Create Quiz"}
           </button>
         </div>
       )}

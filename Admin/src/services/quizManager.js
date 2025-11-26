@@ -10,6 +10,7 @@ import {
   writeBatch,
   arrayUnion,
   addDoc,
+  arrayRemove,
 } from "firebase/firestore";
 
 /**
@@ -297,4 +298,363 @@ export const createClassQuiz = async ({
   }
 
   return quizDoc.id;
+};
+
+// 📌 Get all chapter quizzes for a chapter
+export const getChapterQuizzes = async (classId, subjectId, chapterId) => {
+  const ref = collection(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "chapters",
+    chapterId,
+    "quizzes"
+  );
+  const snap = await getDocs(ref);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+// 📌 Get all subject quizzes
+export const getSubjectQuizzes = async (classId, subjectId) => {
+  const ref = collection(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "quizzes"
+  );
+  const snap = await getDocs(ref);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+// 📌 Get all class quizzes
+export const getClassQuizzes = async (classId) => {
+  const ref = collection(firestoreDB, "classes", classId, "quizzes");
+  const snap = await getDocs(ref);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+// 📌 Delete quiz (auto remove usage from all questions)
+export const deleteQuiz = async (quiz) => {
+  const { id: quizId, type, classId, subjectId, chapterId, title } = quiz;
+
+  let quizRef;
+  if (type === "chapter") {
+    quizRef = doc(
+      firestoreDB,
+      "classes",
+      classId,
+      "subjects",
+      subjectId,
+      "chapters",
+      chapterId,
+      "quizzes",
+      quizId
+    );
+  } else if (type === "subject") {
+    quizRef = doc(
+      firestoreDB,
+      "classes",
+      classId,
+      "subjects",
+      subjectId,
+      "quizzes",
+      quizId
+    );
+  } else {
+    quizRef = doc(firestoreDB, "classes", classId, "quizzes", quizId);
+  }
+
+  // Remove usage from questions
+  for (const q of quiz.questions) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayRemove({
+        quizId,
+        quizTitle: title,
+        quizType: type,
+        levelLabel: title,
+      }),
+    });
+  }
+
+  return deleteDoc(quizRef);
+};
+
+// update quiz at chapter level
+export const updateChapterQuiz = async ({
+  quizId,
+  classId,
+  subjectId,
+  chapterId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  previousQuestions,
+}) => {
+  const quizRef = doc(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "chapters",
+    chapterId,
+    "quizzes",
+    quizId
+  );
+
+  // 1. Update quiz doc
+  await updateDoc(quizRef, {
+    title,
+    description,
+    durationMinutes,
+    questions,
+    totalQuestions: questions.length,
+    updatedAt: serverTimestamp(),
+  });
+
+  // 2. Remove usage from questions no longer used
+  const removed = previousQuestions.filter(
+    (prev) => !questions.some((curr) => curr.questionId === prev.questionId)
+  );
+
+  for (const q of removed) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayRemove({
+        quizId,
+        quizTitle: title,
+        quizType: "chapter",
+        levelLabel: title,
+      }),
+    });
+  }
+
+  // 3. Add usage to new questions
+  const added = questions.filter(
+    (curr) =>
+      !previousQuestions.some((prev) => prev.questionId === curr.questionId)
+  );
+
+  for (const q of added) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId,
+        quizTitle: title,
+        quizType: "chapter",
+        levelLabel: title,
+        createdAt: new Date(),
+      }),
+    });
+  }
+};
+
+// ✅ UPDATE SUBJECT-LEVEL QUIZ
+export const updateSubjectQuiz = async ({
+  quizId,
+  classId,
+  subjectId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  previousQuestions,
+}) => {
+  const quizRef = doc(
+    firestoreDB,
+    "classes",
+    classId,
+    "subjects",
+    subjectId,
+    "quizzes",
+    quizId
+  );
+
+  // 1. Update main quiz document
+  await updateDoc(quizRef, {
+    title,
+    description,
+    durationMinutes,
+    questions,
+    totalQuestions: questions.length,
+    updatedAt: serverTimestamp(),
+  });
+
+  // 2. Remove usage from removed questions
+  const removed = previousQuestions.filter(
+    (prev) => !questions.some((curr) => curr.questionId === prev.questionId)
+  );
+
+  for (const q of removed) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayRemove({
+        quizId,
+        quizTitle: title,
+        quizType: "subject",
+        levelLabel: title,
+      }),
+    });
+  }
+
+  // 3. Add usage to new questions
+  const added = questions.filter(
+    (curr) =>
+      !previousQuestions.some((prev) => prev.questionId === curr.questionId)
+  );
+
+  for (const q of added) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId,
+        quizTitle: title,
+        quizType: "subject",
+        levelLabel: title,
+        createdAt: new Date(),
+      }),
+    });
+  }
+};
+
+// ✅ UPDATE CLASS-LEVEL QUIZ
+export const updateClassQuiz = async ({
+  quizId,
+  classId,
+  title,
+  description,
+  durationMinutes,
+  questions,
+  previousQuestions,
+}) => {
+  const quizRef = doc(firestoreDB, "classes", classId, "quizzes", quizId);
+
+  // 1. Update quiz metadata
+  await updateDoc(quizRef, {
+    title,
+    description,
+    durationMinutes,
+    questions,
+    totalQuestions: questions.length,
+    updatedAt: serverTimestamp(),
+  });
+
+  // 2. Remove usage from deleted questions
+  const removed = previousQuestions.filter(
+    (prev) => !questions.some((curr) => curr.questionId === prev.questionId)
+  );
+
+  for (const q of removed) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayRemove({
+        quizId,
+        quizTitle: title,
+        quizType: "class",
+        levelLabel: title,
+      }),
+    });
+  }
+
+  // 3. Add usage to new questions
+  const added = questions.filter(
+    (curr) =>
+      !previousQuestions.some((prev) => prev.questionId === curr.questionId)
+  );
+
+  for (const q of added) {
+    const qRef = doc(
+      firestoreDB,
+      "classes",
+      q.classId,
+      "subjects",
+      q.subjectId,
+      "chapters",
+      q.chapterId,
+      "questions",
+      q.questionId
+    );
+
+    await updateDoc(qRef, {
+      usage: arrayUnion({
+        quizId,
+        quizTitle: title,
+        quizType: "class",
+        levelLabel: title,
+        createdAt: new Date(),
+      }),
+    });
+  }
 };

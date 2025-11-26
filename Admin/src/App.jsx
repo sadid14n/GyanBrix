@@ -24,6 +24,7 @@ import ManageQuestions from "./pages/admin/Quiz/ManageQuestions";
 import CreateChapterQuiz from "./pages/admin/Quiz/CreateChapterQuiz";
 import CreateSubjectQuiz from "./pages/admin/Quiz/CreateSubjectQuiz";
 import CreateClassQuiz from "./pages/admin/Quiz/CreateClassQuiz";
+import ManageQuizzes from "./pages/admin/Quiz/ManageQuizzes";
 
 const App = () => {
   return (
@@ -158,6 +159,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <CreateClassQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/manage-quizzes"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManageQuizzes />
             </ProtectedRoute>
           }
         />
