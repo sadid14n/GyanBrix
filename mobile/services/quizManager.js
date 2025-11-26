@@ -212,17 +212,58 @@ export const loadFullQuizQuestions = async (quiz) => {
    🔥 EVALUATE QUIZ
 -------------------------------------------------------- */
 
+// export const evaluateQuiz = (questions, userAnswers) => {
+//   let correct = 0;
+//   let wrong = 0;
+
+//   const detailed = questions.map((q) => {
+//     const userAnswer = userAnswers[q.id];
+//     const right = q.correctOption;
+
+//     const isCorrect = userAnswer === right;
+//     if (isCorrect) correct++;
+//     else wrong++;
+
+//     return {
+//       questionId: q.id,
+//       question: q.question,
+//       selectedOption: userAnswer || null,
+//       correctOption: right,
+//       isCorrect,
+//     };
+//   });
+
+//   const total = questions.length;
+
+//   return {
+//     correct,
+//     wrong,
+//     total,
+//     score: Math.round((correct / total) * 100),
+//     detailed,
+//   };
+// };
+
 export const evaluateQuiz = (questions, userAnswers) => {
   let correct = 0;
   let wrong = 0;
+  let skipped = 0;
 
   const detailed = questions.map((q) => {
     const userAnswer = userAnswers[q.id];
     const right = q.correctOption;
 
-    const isCorrect = userAnswer === right;
-    if (isCorrect) correct++;
-    else wrong++;
+    let isCorrect = false;
+
+    if (!userAnswer) {
+      // ⏳ User skipped this question
+      skipped++;
+    } else if (userAnswer === right) {
+      correct++;
+      isCorrect = true;
+    } else {
+      wrong++;
+    }
 
     return {
       questionId: q.id,
@@ -230,6 +271,7 @@ export const evaluateQuiz = (questions, userAnswers) => {
       selectedOption: userAnswer || null,
       correctOption: right,
       isCorrect,
+      skipped: !userAnswer,
     };
   });
 
@@ -238,6 +280,7 @@ export const evaluateQuiz = (questions, userAnswers) => {
   return {
     correct,
     wrong,
+    skipped,
     total,
     score: Math.round((correct / total) * 100),
     detailed,
@@ -263,6 +306,7 @@ export const saveQuizAttempt = async (userId, quiz, result) => {
       totalQuestions: result.total,
       correct: result.correct,
       wrong: result.wrong,
+      skipped: result.skipped,
       score: result.score,
 
       detailed: result.detailed,

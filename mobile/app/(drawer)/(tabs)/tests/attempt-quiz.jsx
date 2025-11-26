@@ -1,6 +1,5 @@
-import { useFocusEffect } from "@react-navigation/native"; // ✅ Add this
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -42,61 +41,7 @@ export default function AttemptQuiz() {
   /* -----------------------------------------------
       🚫 BLOCK EXIT WHILE QUIZ IS RUNNING
   ----------------------------------------------- */
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const beforeRemove = (e) => {
-  //       e.preventDefault(); // Block navigation
 
-  //       Alert.alert(
-  //         "Leave Quiz?",
-  //         "If you leave now, your quiz will be submitted automatically.",
-  //         [
-  //           { text: "Stay", style: "cancel", onPress: () => {} },
-  //           {
-  //             text: "Submit & Leave",
-  //             style: "destructive",
-  //             onPress: () => {
-  //               navigation.dispatch(e.data.action); // allow leaving
-  //               handleSubmit(true); // auto-submit
-  //             },
-  //           },
-  //         ]
-  //       );
-  //     };
-
-  //     navigation.addListener("beforeRemove", beforeRemove);
-
-  //     return () => navigation.removeListener("beforeRemove", beforeRemove);
-  //   }, [navigation, quizMeta]) // dependencies
-  // );
-
-  useFocusEffect(
-    useCallback(() => {
-      const beforeRemove = (e) => {
-        e.preventDefault();
-
-        Alert.alert(
-          "Leave Quiz?",
-          "If you leave now, your quiz will be submitted automatically.",
-          [
-            { text: "Stay", style: "cancel", onPress: () => {} },
-            {
-              text: "Submit & Leave",
-              style: "destructive",
-              onPress: () => {
-                handleSubmit(); // auto-submit
-                // navigation.dispatch(e.data.action); // allow leaving
-              },
-            },
-          ]
-        );
-      };
-
-      const sub = navigation.addListener("beforeRemove", beforeRemove);
-
-      return () => sub && sub();
-    }, [navigation, quizMeta])
-  );
   /* --------------------------------------------------------
      🔥 Load quiz metadata + full questions
   -------------------------------------------------------- */
@@ -205,6 +150,16 @@ export default function AttemptQuiz() {
 
     await saveQuizAttempt(user.uid, quizMeta, result);
 
+    // router.replace({
+    //   pathname: "/(drawer)/(tabs)/tests/quiz-result",
+    //   params: {
+    //     quizTitle: quizMeta.title,
+    //     score: result.score,
+    //     correct: result.correct,
+    //     wrong: result.wrong,
+    //     total: result.total,
+    //   },
+    // });
     router.replace({
       pathname: "/(drawer)/(tabs)/tests/quiz-result",
       params: {
@@ -212,6 +167,7 @@ export default function AttemptQuiz() {
         score: result.score,
         correct: result.correct,
         wrong: result.wrong,
+        skipped: result.skipped,
         total: result.total,
       },
     });
