@@ -18,6 +18,7 @@ import BannerList from "./pages/admin/BannerList";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import ContactUs from "./pages/ContactUs";
+import Landing from "./pages/Landing";
 
 const App = () => {
   return (
@@ -131,6 +132,7 @@ const App = () => {
       <Route path="/contact-us" element={<ContactUs />} />
 
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/landing" element={<Landing />} />
     </Routes>
   );
 };
