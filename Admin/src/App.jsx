@@ -43,13 +43,15 @@ const App = () => {
 
       {/* Home */}
       <Route
-        path="/"
+        path="/home"
         element={
           <ProtectedRoute allowedRoles={["admin", "user"]}>
             <Home />
           </ProtectedRoute>
         }
       />
+
+      <Route path="/" element={<Landing />} />
 
       {/* Admin */}
       <Route
@@ -132,7 +134,6 @@ const App = () => {
       <Route path="/contact-us" element={<ContactUs />} />
 
       <Route path="/unauthorized" element={<Unauthorized />} />
-      <Route path="/landing" element={<Landing />} />
     </Routes>
   );
 };
