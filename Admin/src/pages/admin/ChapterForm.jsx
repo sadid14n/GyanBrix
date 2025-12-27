@@ -18,17 +18,20 @@ const ChapterForm = ({
   const [uploadProgress, setUploadProgress] = useState(null);
   const [isUploading, setIsUploading] = useState(false); // 🆕 prevent typing
 
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
+
   /* ------------------ PDF Upload ------------------ */
-  const handlePdfUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+
+  const handlePdfUpload = () => {
+    if (!pdfFile) return alert("Please select a PDF first");
 
     setIsUploading(true);
-    const pdfRef = ref(
-      firebaseStorage,
-      `chapterPDF/${Date.now()}-${file.name}`
-    );
-    const uploadTask = uploadBytesResumable(pdfRef, file);
+
+    const path = `chapterPDF/${Date.now()}-${pdfFile.name}`;
+    const pdfRef = ref(firebaseStorage, path);
+
+    const uploadTask = uploadBytesResumable(pdfRef, pdfFile);
 
     uploadTask.on(
       "state_changed",
@@ -37,7 +40,8 @@ const ChapterForm = ({
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setUploadProgress(progress.toFixed(0));
       },
-      () => {
+      (error) => {
+        console.error("❌ PDF upload error:", error);
         alert("PDF upload failed!");
         setIsUploading(false);
       },
@@ -49,6 +53,19 @@ const ChapterForm = ({
         alert("PDF uploaded successfully!");
       }
     );
+  };
+
+  const handlePdfSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please select a valid PDF file");
+      return;
+    }
+
+    setPdfFile(file);
+    setPdfPreviewUrl(URL.createObjectURL(file));
   };
 
   /* ------------------ Quill Image Handler ------------------ */
@@ -99,58 +116,6 @@ const ChapterForm = ({
       );
     };
   };
-
-  // Custom Image Upload Handler
-  // const imageHandler = () => {
-  //   const input = document.createElement("input");
-  //   input.setAttribute("type", "file");
-  //   input.setAttribute("accept", "image/*");
-  //   input.click();
-
-  //   input.onchange = async () => {
-  //     const file = input.files[0];
-  //     if (!file) return;
-
-  //     // Disable typing while uploading
-  //     setIsUploading(true);
-  //     setUploadProgress(0);
-
-  //     const imageRef = ref(
-  //       firebaseStorage,
-  //       `chapterImages/${Date.now()}-${file.name}`
-  //     );
-
-  //     const uploadTask = uploadBytesResumable(imageRef, file);
-
-  //     uploadTask.on(
-  //       "state_changed",
-  //       (snapshot) => {
-  //         const progress =
-  //           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //         setUploadProgress(progress.toFixed(0));
-  //       },
-  //       (error) => {
-  //         console.error("Image upload failed:", error);
-  //         setUploadProgress(null);
-  //         setIsUploading(false);
-  //       },
-  //       async () => {
-  //         // ✅ Wait until fully uploaded
-  //         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-  //         const quill = quillRef.current.getEditor();
-
-  //         // ✅ Ensure editor has a valid range before inserting
-  //         const range = quill.getSelection(true);
-  //         quill.insertEmbed(range.index, "image", downloadURL);
-  //         quill.setSelection(range.index + 1);
-
-  //         // Reset states
-  //         setUploadProgress(null);
-  //         setIsUploading(false);
-  //       }
-  //     );
-  //   };
-  // };
 
   const quillModules = {
     toolbar: {
@@ -294,17 +259,48 @@ const ChapterForm = ({
 
             {/* Show PDF Upload if type = pdf */}
             {formData.chapterType === "pdf" && (
-              <div>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handlePdfUpload}
-                />
-                {uploadProgress && <p>Uploading PDF: {uploadProgress}%</p>}
+              <div className="space-y-3">
+                {/* Select PDF Button */}
+                <label className="inline-block cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
+                  Select PDF
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={handlePdfSelect}
+                  />
+                </label>
 
+                {/* Preview */}
+                {pdfPreviewUrl && (
+                  <div className="border rounded-lg overflow-hidden h-64">
+                    <iframe
+                      src={pdfPreviewUrl}
+                      className="w-full h-full"
+                      title="PDF Preview"
+                    />
+                  </div>
+                )}
+
+                {/* Upload button */}
+                {pdfFile && !formData.pdfUrl && (
+                  <button
+                    type="button"
+                    onClick={handlePdfUpload}
+                    disabled={isUploading}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {isUploading ? "Uploading..." : "Upload PDF"}
+                  </button>
+                )}
+
+                {/* Progress */}
+                {uploadProgress && <p>Uploading: {uploadProgress}%</p>}
+
+                {/* Uploaded indicator */}
                 {formData.pdfUrl && (
                   <p className="text-green-600 font-medium mt-2">
-                    📌 PDF Uploaded
+                    📌 PDF uploaded successfully
                   </p>
                 )}
               </div>
@@ -329,112 +325,5 @@ const ChapterForm = ({
     </div>
   );
 };
-
-// return (
-//   <div className="fixed inset-0 z-50 overflow-y-auto">
-//     <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-//       <div className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-surface shadow-xl rounded-lg">
-//         <h3 className="text-lg font-heading font-semibold text-text-heading mb-4">
-//           {editingChapter ? "Edit Chapter" : "Create New Chapter"}
-//         </h3>
-
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           {/* Subject */}
-//           <div>
-//             <label
-//               htmlFor="subjectId"
-//               className="block text-sm font-medium text-text-body mb-2"
-//             >
-//               Subject
-//             </label>
-//             <select
-//               id="subjectId"
-//               name="subjectId"
-//               value={formData.subjectId}
-//               onChange={handleChange}
-//               required
-//               className="admin-input"
-//             >
-//               <option value="">Select a subject</option>
-//               {subjects.map((subject) => {
-//                 const className =
-//                   classes.find((cls) => cls.id === subject.classId)?.name ||
-//                   "";
-//                 return (
-//                   <option key={subject.id} value={subject.id}>
-//                     {className} - {subject.name}
-//                   </option>
-//                 );
-//               })}
-//             </select>
-//           </div>
-
-//           {/* Title */}
-//           <div>
-//             <label
-//               htmlFor="title"
-//               className="block text-sm font-medium text-text-body mb-2"
-//             >
-//               Chapter Title
-//             </label>
-//             <input
-//               type="text"
-//               id="title"
-//               name="title"
-//               value={formData.title}
-//               onChange={handleChange}
-//               required
-//               className="admin-input"
-//               placeholder="e.g., Acid Base and Salt, Thermodynamics"
-//             />
-//           </div>
-
-//           {/* Content */}
-//           <div>
-//             <label
-//               htmlFor="content"
-//               className="block text-sm font-medium text-text-body mb-2"
-//             >
-//               Chapter Content/Solution
-//             </label>
-//             <div className="relative bg-surface border border-border rounded-lg">
-//               <ReactQuill
-//                 ref={quillRef}
-//                 theme="snow"
-//                 value={formData.content}
-//                 onChange={handleQuillChange}
-//                 modules={quillModules}
-//                 formats={quillFormats}
-//                 readOnly={isUploading}
-//                 placeholder="Enter the chapter content, solutions, or study material..."
-//                 style={{ minHeight: "200px", opacity: isUploading ? 0.6 : 1 }}
-//               />
-//             </div>
-//             {isUploading && (
-//               <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-blue-600 font-medium">
-//                 Uploading image... {uploadProgress}%
-//               </div>
-//             )}
-//           </div>
-
-//           {/* Buttons */}
-//           <div className="flex justify-end space-x-3 pt-4">
-//             <button
-//               type="button"
-//               onClick={onClose}
-//               className="admin-button-secondary"
-//             >
-//               Cancel
-//             </button>
-//             <button type="submit" className="admin-button-primary">
-//               {editingChapter ? "Update" : "Create"}
-//             </button>
-//           </div>
-//         </form>
-//       </div>
-//     </div>
-//   </div>
-// );
-// };
 
 export default ChapterForm;

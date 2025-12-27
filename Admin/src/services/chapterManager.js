@@ -11,7 +11,30 @@ import {
 } from "firebase/firestore";
 
 // 📌 Add Chapter inside a Subject
-export const addChapter = async (classId, subjectId, title, content, user) => {
+// export const addChapter = async (classId, subjectId, title, content, user) => {
+//   const ref = collection(
+//     firestoreDB,
+//     "classes",
+//     classId,
+//     "subjects",
+//     subjectId,
+//     "chapters"
+//   );
+
+//   console.log("ID: ", classId, subjectId, title);
+
+//   return await addDoc(ref, {
+//     title,
+//     content,
+//     classId,
+//     subjectId,
+//     createdBy: user.uid,
+//     createdAt: serverTimestamp(),
+//   });
+// };
+
+// Add Chapter (supports text or PDF)
+export const addChapter = async (classId, subjectId, formData, user) => {
   const ref = collection(
     firestoreDB,
     "classes",
@@ -21,14 +44,13 @@ export const addChapter = async (classId, subjectId, title, content, user) => {
     "chapters"
   );
 
-  console.log("ID: ", classId, subjectId, title);
+  console.log("ID:", classId, subjectId, formData);
 
   return await addDoc(ref, {
-    title,
-    content,
+    ...formData, // title, content, chapterType, pdfUrl
     classId,
     subjectId,
-    createdBy: user.uid,
+    createdBy: user?.uid || "unknown",
     createdAt: serverTimestamp(),
   });
 };
