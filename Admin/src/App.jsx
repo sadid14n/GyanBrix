@@ -18,6 +18,7 @@ import BannerList from "./pages/admin/BannerList";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import ContactUs from "./pages/ContactUs";
+import Landing from "./pages/Landing";
 
 const App = () => {
   return (
@@ -42,13 +43,15 @@ const App = () => {
 
       {/* Home */}
       <Route
-        path="/"
+        path="/home"
         element={
           <ProtectedRoute allowedRoles={["admin", "user"]}>
             <Home />
           </ProtectedRoute>
         }
       />
+
+      <Route path="/" element={<Landing />} />
 
       {/* Admin */}
       <Route
