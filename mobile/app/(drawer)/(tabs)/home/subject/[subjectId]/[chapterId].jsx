@@ -13,6 +13,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import Pdf from "react-native-pdf";
 import RenderHtml from "react-native-render-html";
 import {
   getChapter,
@@ -32,6 +33,8 @@ export default function ChapterContent() {
 
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
+
+  const [pdfScrolling, setPdfScrolling] = useState(false);
 
   // Fetch single chapter details from Firestore
   useEffect(() => {
@@ -119,35 +122,51 @@ export default function ChapterContent() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} scrollEnabled={!pdfScrolling}>
         {/* Chapter Title */}
         <Text style={styles.title}>{chapter.title}</Text>
 
-        {/* Author & Date */}
+        {/* Date */}
         <View style={styles.metaContainer}>
-          {/* <Text style={styles.metaText}>Author: {authorName}</Text> */}
           <Text style={styles.metaText}>Updated: {formattedDate}</Text>
         </View>
 
-        {/* HTML Content */}
+        {/* CONTENT */}
         <View style={styles.contentContainer}>
-          <RenderHtml
-            contentWidth={width - 40}
-            source={{ html: chapter.content || "<p>No content available.</p>" }}
-            tagsStyles={htmlStyles}
-          />
+          {chapter.chapterType === "pdf" && chapter.pdfUrl ? (
+            <View style={{ height: 600 }}>
+              <Pdf
+                trustAllCerts={false}
+                source={{ uri: chapter.pdfUrl }}
+                style={{ flex: 1, borderRadius: 8 }}
+                onTouchStart={() => setPdfScrolling(true)}
+                onPageChanged={() => setPdfScrolling(false)}
+                onLoadComplete={() => setPdfScrolling(false)}
+                onError={() => setPdfScrolling(false)}
+              />
+            </View>
+          ) : (
+            <RenderHtml
+              contentWidth={width - 40}
+              source={{
+                html: chapter.content || "<p>No content available.</p>",
+              }}
+              tagsStyles={htmlStyles}
+            />
+          )}
         </View>
 
         {/* Feedback Modal */}
         <Modal
           animationType="slide"
-          transparent={true}
+          transparent
           visible={feedbackModalVisible}
           onRequestClose={() => setFeedbackModalVisible(false)}
         >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Send Feedback</Text>
+
               <TextInput
                 style={styles.input}
                 placeholder="Write your message..."
@@ -176,7 +195,7 @@ export default function ChapterContent() {
         </Modal>
       </ScrollView>
 
-      {/* Floating button placed AFTER ScrollView */}
+      {/* Floating feedback button */}
       <TouchableOpacity
         style={styles.floatingButton}
         onPress={() => setFeedbackModalVisible(true)}
@@ -220,7 +239,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     backgroundColor: "#fafafa",
     borderRadius: 12,
-    padding: 16,
+    padding: 8,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },

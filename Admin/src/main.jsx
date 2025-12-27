@@ -5,13 +5,16 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { EditQuizProvider } from "./context/EditQuizContext.jsx";
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <EditQuizProvider>
         <StrictMode>
-          <App />
+          <HelmetProvider>
+            <App />
+          </HelmetProvider>
         </StrictMode>
       </EditQuizProvider>
     </AuthProvider>
