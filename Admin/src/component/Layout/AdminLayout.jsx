@@ -27,6 +27,11 @@ const AdminLayout = () => {
       href: "/admin/admin-management",
       icon: FileText,
     },
+    {
+      name: "Quiz Management",
+      href: "/admin/quiz/quiz-management",
+      icon: FileText,
+    },
     { name: "Banner Upload", href: "/admin/banner-upload", icon: FileText },
     { name: "Banner List", href: "/admin/banner-list", icon: FileText },
   ];
@@ -53,7 +58,7 @@ const AdminLayout = () => {
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <h1 className="text-xl font-heading font-bold text-text-heading">
-            LMS Admin
+            GyanBrix Admin
           </h1>
           <button
             onClick={() => setSidebarOpen(false)}

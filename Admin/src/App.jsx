@@ -18,6 +18,13 @@ import BannerList from "./pages/admin/BannerList";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import ContactUs from "./pages/ContactUs";
+import QuizManagement from "./pages/admin/Quiz/QuizManagement";
+import AddQuestions from "./pages/admin/Quiz/AddQuestions";
+import ManageQuestions from "./pages/admin/Quiz/ManageQuestions";
+import CreateChapterQuiz from "./pages/admin/Quiz/CreateChapterQuiz";
+import CreateSubjectQuiz from "./pages/admin/Quiz/CreateSubjectQuiz";
+import CreateClassQuiz from "./pages/admin/Quiz/CreateClassQuiz";
+import ManageQuizzes from "./pages/admin/Quiz/ManageQuizzes";
 import Landing from "./pages/Landing";
 
 const App = () => {
@@ -111,6 +118,62 @@ const App = () => {
           }
         />
         <Route
+          path="quiz/quiz-management"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <QuizManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/add-questions"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AddQuestions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/manage-questions"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManageQuestions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/create-chapter-quiz"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <CreateChapterQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/create-subject-quiz"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <CreateSubjectQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/create-class-quiz"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <CreateClassQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="quiz/quiz-management/manage-quizzes"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManageQuizzes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="banner-upload"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
@@ -126,6 +189,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+
         {/* <Route path="chapters" element={<Chapters />} /> */}
       </Route>
 
