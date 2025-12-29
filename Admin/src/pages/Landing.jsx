@@ -72,6 +72,23 @@ const Home = () => {
 
         {/* Language */}
         <meta httpEquiv="content-language" content="as" />
+
+        {/* SEO: Official social profiles */}
+        <script type="application/ld+json">
+          {`
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "GyanBrix",
+            "url": "https://gyanbrix.in",
+            "sameAs": [
+              "https://facebook.com/gyanbrix",
+              "https://instagram.com/gyanbrix",
+              "https://youtube.com/@gyanbrix"
+            ]
+          }
+          `}
+        </script>
       </Helmet>
 
       {/* Header */}

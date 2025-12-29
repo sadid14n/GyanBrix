@@ -325,14 +325,14 @@ const AddQuestions = () => {
           <h2 className="text-lg font-heading font-semibold text-text-heading">
             2. Add Questions
           </h2>
-          <button
+          {/* <button
             type="button"
             onClick={addQuestionBlock}
             className="admin-button-secondary flex items-center"
           >
             <Plus className="h-4 w-4 mr-1" />
             Add Another Question
-          </button>
+          </button> */}
         </div>
 
         {questionBlocks.map((q, index) => (
@@ -468,10 +468,19 @@ const AddQuestions = () => {
           </div>
         ))}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-6">
+          <button
+            type="button"
+            onClick={addQuestionBlock}
+            className="admin-button-secondary flex items-center cursor-pointer"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Another Question
+          </button>
+
           <button
             type="submit"
-            className="admin-button-primary"
+            className="admin-button-primary cursor-pointer"
             disabled={
               submitting ||
               !selectedClassId ||

@@ -1,7 +1,13 @@
 import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { getAllSubjects } from "../../../../services/dataManager";
 import { getSubjectQuizzes } from "../../../../services/quizManager";
@@ -35,7 +41,7 @@ export default function SubjectTests() {
         Load quizzes of selected subject
   ---------------------------------------- */
   useEffect(() => {
-    if (!selectedSubject) {
+    if (!classId || !selectedSubject) {
       setQuizzes([]);
       return;
     }
@@ -45,7 +51,7 @@ export default function SubjectTests() {
     getSubjectQuizzes(classId, selectedSubject)
       .then(setQuizzes)
       .finally(() => setLoadingQuizzes(false));
-  }, [selectedSubject]);
+  }, [selectedSubject, classId]);
 
   /* ----------------------------------------
          CLICK HANDLER
@@ -65,24 +71,29 @@ export default function SubjectTests() {
 
   return (
     <ScrollView style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 15 }}>
-        Subject Tests
+      <Text style={{ fontSize: 16, fontWeight: "500", marginBottom: 15 }}>
+        SUBJECT QUIZZES
       </Text>
 
-      <Text>Select Subject</Text>
+      {/* SUBJECT PICKER */}
+      <Text style={styles.title}>Select Subject</Text>
 
       {loadingSubjects ? (
         <ActivityIndicator size="large" />
       ) : (
-        <Picker
-          selectedValue={selectedSubject}
-          onValueChange={(value) => setSelectedSubject(value)}
-        >
-          <Picker.Item label="Choose a Subject" value="" />
-          {subjects.map((sub) => (
-            <Picker.Item key={sub.id} label={sub.name} value={sub.id} />
-          ))}
-        </Picker>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedSubject}
+            onValueChange={(value) => setSelectedSubject(value)}
+            style={styles.picker}
+            dropdownIconColor="#6d28d9"
+          >
+            <Picker.Item label="Choose a Subject" value="" />
+            {subjects.map((sub) => (
+              <Picker.Item key={sub.id} label={sub.name} value={sub.id} />
+            ))}
+          </Picker>
+        </View>
       )}
 
       {/* QUIZ LIST */}
@@ -120,3 +131,28 @@ export default function SubjectTests() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  pickerContainer: {
+    borderWidth: 2,
+    borderColor: "#6d28d9",
+    borderRadius: 12,
+    backgroundColor: "#eee5ff",
+    marginTop: 6,
+
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    minHeight: 48,
+  },
+
+  picker: {
+    color: "#6d28d9",
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "800",
+    marginBottom: 15,
+    color: "#6d28d9",
+  },
+});

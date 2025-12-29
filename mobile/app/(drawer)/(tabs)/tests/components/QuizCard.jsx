@@ -7,7 +7,7 @@ export default function QuizCard({ quiz, onPress }) {
       <Text style={styles.title}>{quiz.title}</Text>
 
       <Text style={styles.meta}>
-        {quiz.totalQuestions} Questions • {quiz.durationMinutes} min
+        {/* {quiz.totalQuestions} Questions • {quiz.durationMinutes} min */}
       </Text>
 
       <View

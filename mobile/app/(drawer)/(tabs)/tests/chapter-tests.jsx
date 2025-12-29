@@ -1,7 +1,13 @@
 import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import {
   getAllChapters,
@@ -44,7 +50,7 @@ export default function ChapterTests() {
         Load chapters after subject select
   ---------------------------------------- */
   useEffect(() => {
-    if (!selectedSubject) {
+    if (!classId || !selectedSubject) {
       setChapters([]);
       return;
     }
@@ -54,13 +60,13 @@ export default function ChapterTests() {
     getAllChapters(classId, selectedSubject)
       .then(setChapters)
       .finally(() => setLoadingChapters(false));
-  }, [selectedSubject]);
+  }, [selectedSubject, classId]);
 
   /* ----------------------------------------
         Load quizzes after chapter select
   ---------------------------------------- */
   useEffect(() => {
-    if (!selectedChapter) {
+    if (!classId || !selectedSubject || !selectedChapter) {
       setQuizzes([]);
       return;
     }
@@ -70,12 +76,22 @@ export default function ChapterTests() {
     getChapterQuizzes(classId, selectedSubject, selectedChapter)
       .then(setQuizzes)
       .finally(() => setLoadingQuizzes(false));
-  }, [selectedChapter]);
+  }, [selectedChapter, selectedSubject, classId]);
 
   /* ----------------------------------------
         CLICK HANDLER
   ---------------------------------------- */
   const handleQuizPress = (quiz) => {
+    if (!quiz?.id || !classId || !selectedSubject || !selectedChapter) {
+      console.log("Missing params:", {
+        quizId: quiz?.id,
+        classId,
+        selectedSubject,
+        selectedChapter,
+      });
+      return;
+    }
+
     router.push({
       pathname: "/(drawer)/(tabs)/tests/quiz-details",
       params: {
@@ -95,44 +111,50 @@ export default function ChapterTests() {
       </Text>
 
       {/* SUBJECT SELECT */}
-      <Text>Select Subject</Text>
+      <Text style={styles.title}>Select Subject</Text>
       {loadingSubjects ? (
         <ActivityIndicator size="large" />
       ) : (
-        <Picker
-          selectedValue={selectedSubject}
-          onValueChange={(val) => {
-            setSelectedSubject(val);
-            setSelectedChapter(""); // reset chapter
-            setQuizzes([]);
-          }}
-        >
-          <Picker.Item label="Select subject" value="" />
-          {subjects.map((s) => (
-            <Picker.Item key={s.id} label={s.name} value={s.id} />
-          ))}
-        </Picker>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedSubject}
+            onValueChange={(val) => {
+              setSelectedSubject(val);
+              setSelectedChapter("");
+              setQuizzes([]);
+            }}
+            style={styles.picker}
+            dropdownIconColor="#6d28d9"
+          >
+            <Picker.Item label="Select subject" value="" />
+            {subjects.map((s) => (
+              <Picker.Item key={s.id} label={s.name} value={s.id} />
+            ))}
+          </Picker>
+        </View>
       )}
 
       {/* CHAPTER SELECT */}
       {selectedSubject ? (
         <>
-          <Text style={{ marginTop: 10 }}>Select Chapter</Text>
+          <Text style={styles.title}>Select Chapter</Text>
 
           {loadingChapters ? (
             <ActivityIndicator size="large" />
           ) : (
-            <Picker
-              selectedValue={selectedChapter}
-              onValueChange={(val) => {
-                setSelectedChapter(val);
-              }}
-            >
-              <Picker.Item label="Select chapter" value="" />
-              {chapters.map((ch) => (
-                <Picker.Item key={ch.id} label={ch.title} value={ch.id} />
-              ))}
-            </Picker>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedChapter}
+                onValueChange={setSelectedChapter}
+                style={styles.picker}
+                dropdownIconColor="#6d28d9"
+              >
+                <Picker.Item label="Select chapter" value="" />
+                {chapters.map((ch) => (
+                  <Picker.Item key={ch.id} label={ch.title} value={ch.id} />
+                ))}
+              </Picker>
+            </View>
           )}
         </>
       ) : null}
@@ -170,3 +192,28 @@ export default function ChapterTests() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  pickerContainer: {
+    borderWidth: 2,
+    borderColor: "#6d28d9",
+    borderRadius: 12,
+    backgroundColor: "#eee5ff",
+    marginTop: 6,
+    marginBottom: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 4, // give vertical breathing room
+    minHeight: 48, // ensures nothing gets cropped
+  },
+
+  picker: {
+    color: "#6d28d9",
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "800",
+    marginBottom: 15,
+    color: "#6d28d9",
+  },
+});
