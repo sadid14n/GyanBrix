@@ -7,6 +7,7 @@ import {
   Plus,
   TrendingUp,
 } from "lucide-react";
+import { getTotalClasses, getTotalUsers } from "../../services/userServices";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -15,6 +16,25 @@ const Dashboard = () => {
     totalChapters: 0,
     totalStudents: 156, // dummy data
   });
+
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalClasses, setTotalClasses] = useState(0);
+
+  useEffect(() => {
+    async function load() {
+      const count = await getTotalUsers();
+      setTotalUsers(count);
+    }
+    load();
+  }, []);
+
+  useEffect(() => {
+    async function load() {
+      const count = await getTotalClasses();
+      setTotalClasses(count);
+    }
+    load();
+  }, []);
 
   // Dummy recent activities
   const recentActivities = [
@@ -61,7 +81,7 @@ const Dashboard = () => {
   const statCards = [
     {
       name: "Total Classes",
-      value: stats.totalClasses,
+      value: totalClasses,
       icon: GraduationCap,
       color: "text-primary",
       bgColor: "bg-primary/10",
@@ -82,7 +102,7 @@ const Dashboard = () => {
     },
     {
       name: "Total Students",
-      value: stats.totalStudents,
+      value: totalUsers,
       icon: Users,
       color: "text-warning",
       bgColor: "bg-warning/10",
