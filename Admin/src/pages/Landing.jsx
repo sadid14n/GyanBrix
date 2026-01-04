@@ -16,6 +16,7 @@ import {
 import { Helmet } from "react-helmet-async";
 
 import AppImage from "../assets/home.jpeg";
+import FAQSection from "../component/FAQSection";
 
 const Home = () => {
   const stats = [
@@ -45,35 +46,40 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
       <Helmet>
         <title>
-          GyanBrix — Free HSLC (SEBA) Class 10 Notes, PDFs & Mock Tests
+          Class 10 Assamese Medium — Free SEBA HSLC Notes & Solutions | GyanBrix
         </title>
 
         <meta
           name="description"
-          content="Free HSLC (SEBA) Class 10 Assamese Medium notes, maths solutions, question papers and mock tests. Download GyanBrix and score better."
+          content="Best Class 10 Assamese Medium study app for SEBA HSLC students. Get free notes, maths solutions, question papers, mock tests and PDFs — only on GyanBrix."
         />
 
         <meta
           name="keywords"
-          content="HSLC, SEBA, Assamese medium, class 10 notes, HSLC mock tests, maths solutions, SEBA question papers"
+          content="Class 10 Assamese Medium, SEBA HSLC, Assam Class 10 notes, Assamese medium app, HSLC mock tests, SEBA question papers"
         />
 
         {/* Social / Share preview */}
         <meta
           property="og:title"
-          content="GyanBrix — Best App for SEBA HSLC Students"
+          content="GyanBrix — Best Class 10 Assamese Medium Study App"
         />
         <meta
           property="og:description"
-          content="Free notes, mock tests and solutions for SEBA HSLC Class 10."
+          content="Free SEBA HSLC notes, solutions and mock tests for Class 10 Assamese Medium students."
         />
-        <meta property="og:image" content="/seo-cover.jpg" />
+        <meta property="og:image" content="https://gyanbrix.in/seo-cover.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
         <meta property="og:type" content="website" />
+
+        <link rel="canonical" href="https://gyanbrix.in/" />
 
         {/* Language */}
         <meta httpEquiv="content-language" content="as" />
 
-        {/* SEO: Official social profiles */}
+        {/* Organization */}
         <script type="application/ld+json">
           {`
           {
@@ -82,12 +88,76 @@ const Home = () => {
             "name": "GyanBrix",
             "url": "https://gyanbrix.in",
             "sameAs": [
-              "https://facebook.com/gyanbrix",
-              "https://instagram.com/gyanbrix",
-              "https://youtube.com/@gyanbrix"
+              "https://www.instagram.com/gyanbrix?igsh=MXNxN2YzcWFsd2JnYw==",
+              "https://www.facebook.com/share/18BAHTYgvG/",
+              "https://www.facebook.com/groups/892979313086835/?ref=share&mibextid=NSMWBT"
             ]
           }
           `}
+        </script>
+
+        {/* FAQ Schema */}
+        <script type="application/ld+json">
+          {`
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is GyanBrix useful for Class 10 Assamese Medium students?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. GyanBrix is made specially for SEBA Class 10 Assamese Medium students. It includes notes, solutions, PDFs and mock tests."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is GyanBrix free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, GyanBrix is 100% free for Class 10 Assamese Medium students across Assam."
+                }
+              }
+            ]
+          }
+          `}
+        </script>
+
+        {/* Mobile App Schema */}
+        <script type="application/ld+json">
+          {`
+    {
+      "@context": "https://schema.org",
+      "@type": "MobileApplication",
+      "name": "GyanBrix",
+      "applicationCategory": "EducationApplication",
+      "applicationSubCategory": "Exam Preparation",
+      "operatingSystem": "Android",
+      "inLanguage": "as-IN",
+      "url": "https://gyanbrix.in",
+      "image": "https://gyanbrix.in/seo-cover.jpg",
+      "description": "Free SEBA HSLC study app for Class 10 Assamese Medium students — notes, solutions, question papers and mock tests.",
+      "softwareVersion": "1.0",
+      "identifier": "com.gyanbrix.app",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "1000"
+      },
+      "downloadUrl": "https://play.google.com/store/apps/details?id=com.gyanbrix.app",
+      "installUrl": "https://play.google.com/store/apps/details?id=com.gyanbrix.app",
+      "publisher": {
+        "@type": "Organization",
+        "name": "GyanBrix"
+      }
+    }
+    `}
         </script>
       </Helmet>
 
@@ -130,26 +200,24 @@ const Home = () => {
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-600"></span>
                 </span>
                 <span className="text-sm font-semibold text-gray-700">
-                  #1 App for SEBA Students
+                  Best Class 10 Assamese Medium Study App
                 </span>
               </div>
 
               <div className="space-y-4">
-                <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
-                  <span className="bg-gradient-to-r from-gray-900 via-purple-800 to-purple-900 bg-clip-text text-transparent">
-                    HSLC ত
+                <h1 className=" font-extrabold leading-tight">
+                  <span className="text-5xl md:text-5xl bg-gradient-to-r from-gray-900 via-purple-800 to-purple-900 bg-clip-text text-transparent">
+                    HSLC ত ভাল নম্বৰ পাওক
                   </span>
                   <br />
-                  <span className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-                    ভাল নম্বৰ পাওক
+                  <span className="text-5xl md:text-6xl bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+                    SEBA Class 10 Assamese Medium
                   </span>
                 </h1>
-                <p className="text-xl md:text-2xl text-gray-600 max-w-xl leading-relaxed">
-                  Complete study materials for{" "}
-                  <span className="font-bold text-purple-700">
-                    Class 10 Assamese Medium
-                  </span>{" "}
-                  — Notes, Solutions & Mock Tests
+                <p className="text-xl text-gray-600 max-w-xl">
+                  GyanBrix helps <b>Class 10 Assamese Medium</b> students
+                  prepare for HSLC with free notes, maths solutions, question
+                  papers and mock tests — designed exactly for SEBA syllabus.
                 </p>
               </div>
 
@@ -198,7 +266,7 @@ const Home = () => {
                 <div className="relative bg-white rounded-[3rem] overflow-hidden aspect-[9/19]">
                   <img
                     src={AppImage}
-                    alt="GyanBrix App Screenshot"
+                    alt="GyanBrix app — Class 10 Assamese Medium study app"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -239,11 +307,11 @@ const Home = () => {
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Complete HSLC Preparation
+              Complete HSLC Assamese Medium Preparation
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              All subjects, all chapters — designed strictly for SEBA Class 10
-              students
+              All subjects, all chapters — designed specially for SEBA Class 10
+              Assamese Medium students preparing for HSLC.
             </p>
           </div>
 
@@ -251,15 +319,15 @@ const Home = () => {
             {[
               {
                 icon: BookOpen,
-                title: "Class 10 Notes (Assamese)",
+                title: "Class 10 Assamese Medium Notes",
                 description:
-                  "Detailed Science, Social Science & English notes in Assamese medium",
+                  "Detailed Assamese, Science, Social Science, Mathematics & English notes in Assamese medium",
                 gradient: "from-purple-600 to-purple-700",
                 highlight: "Top Rated",
               },
               {
                 icon: CheckCircle,
-                title: "Maths Solutions (Ganit)",
+                title: "Maths Solutions (Ganit Assamese Medium)",
                 description:
                   "Step-by-step solutions for General Mathematics Class 10 SEBA",
                 gradient: "from-purple-500 to-purple-600",
@@ -267,7 +335,7 @@ const Home = () => {
               },
               {
                 icon: FileText,
-                title: "HSLC Question Papers",
+                title: "SEBA HSLC Question Papers — Class 10",
                 description:
                   "Previous 10 years SEBA question papers with solved answers",
                 gradient: "from-purple-700 to-purple-800",
@@ -428,6 +496,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Final CTA */}
       <section className="py-24 px-6">

@@ -25,6 +25,8 @@ export default function ChapterContent() {
   const { subjectId, chapterId, classId } = useLocalSearchParams();
   const { width } = useWindowDimensions();
 
+  const { height } = useWindowDimensions();
+
   const { getUserName, user, profile } = useAuth();
 
   const [chapter, setChapter] = useState(null);
@@ -134,7 +136,7 @@ export default function ChapterContent() {
         {/* CONTENT */}
         <View style={styles.contentContainer}>
           {chapter.chapterType === "pdf" && chapter.pdfUrl ? (
-            <View style={{ height: 600 }}>
+            <View style={{ height: height - 200 }}>
               <Pdf
                 trustAllCerts={false}
                 source={{ uri: chapter.pdfUrl }}
